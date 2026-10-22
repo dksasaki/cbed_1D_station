@@ -1,0 +1,129 @@
+! Blank file in which we can put "overrides" for parameters
+#override REENTRANT_Y = True
+#override REENTRANT_X = True
+#override THICKNESS_CONFIG = "coord"
+#override ALE_COORDINATE_CONFIG = "FNC1:2,6500,6,.01"
+#override REGRIDDING_COORDINATE_MODE = "Z*"
+#override Z_INIT_REMAPPING_SCHEME = "PPM_IH4" 
+#override Z_INIT_REMAP_OLD_ALG = True
+#override TRACERS_MAY_REINIT = True
+! ---------------------------------------------------------------------
+! RELOCATABLE INITIALISATION.
+! The regression case (exps/OM4.single_column.COBALT) reads MOM_IC.nc,
+! which is index-matched to the BATS grid and therefore cannot be used
+! at another station. Here we instead let MOM6 interpolate global WOA13
+! monthly climatology onto whatever ocean_hgrid.nc is supplied, so the
+! same configuration runs anywhere.
+! The file names / variable names are already set in MOM_input
+! (TEMP_Z_INIT_FILE, SALT_Z_INIT_FILE, Z_INIT_FILE_PTEMP_VAR,
+!  Z_INIT_FILE_SALT_VAR, Z_INIT_ALE_REMAPPING); they were inert only
+! because INIT_LAYERS_FROM_Z_FILE was overridden to False.
+#override INIT_LAYERS_FROM_Z_FILE = True
+! ---------------------------------------------------------------------
+!
+#override KD = 5.e-4
+#override RESOLN_SCALED_KH = False
+#override RESOLN_SCALED_KHTH = False
+#override HENYEY_IGW_BACKGROUND = False
+#override KAPPA_BUOY_SCALE_COEF = 100.0
+#override THICKNESSDIFFUSE = False
+#override LAPLACIAN = False
+#override SMAGORINSKY_AH = False
+!Extra flags needed
+#override Z_INIT_HOMOGENIZE = True
+! ---------------------------------------------------------------------
+! ROTATION must follow the station latitude.
+! The regression case sets ROTATION = "betaplane" with F_0 = 0, i.e. zero
+! Coriolis everywhere. Over its 48-hour run that is harmless, but it is
+! wrong here for two reasons:
+!   1. With f = 0 there is no rotational limit on wind-driven mixed-layer
+!      deepening. The boundary layer deepens without bound, holding SST
+!      artificially low, which suppresses longwave and latent heat loss and
+!      makes the column absorb heat continuously. A year-long run runs away:
+!      the thermocline collapses and the column-mean temperature climbs
+!      ~2.7 C, implying a physically impossible ~1400 W/m2 net surface flux.
+!   2. A relocatable case needs f to vary with latitude -- otherwise a run
+!      at the equator and one at 60N are dynamically identical.
+! "2omegasinlat" computes f from the grid latitude, so each station gets the
+! right value automatically. This matches the older MOM6_OBGC_examples 1-D
+! configuration, which ran a full year successfully.
+#override ROTATION = "2omegasinlat"
+#override OMEGA = 7.2921E-05
+! ---------------------------------------------------------------------
+#override HOMOGENIZE_FORCINGS = True 
+!OBGC tracers
+#override USE_OCMIP2_CFC = False
+#override USE_IDEAL_AGE_TRACER = False
+#override USE_generic_tracer = True
+#override VAR_PEN_SW = True
+#override PEN_SW_NBANDS = 3 
+#override CHL_FROM_FILE = False
+#override DO_GEOTHERMAL = True 
+#override GEOTHERMAL_SCALE = 0.0
+! GENERIC_TRACER_IC_FILE deliberately NOT set: every COBALT tracer is
+! initialised through its *_src_file entry in field_table (global WOA13,
+! GLODAPv2 and cobaltv3_tracer_source.nc), or cold-starts from the tracer's
+! const_init_value where no global source exists. Those tracers carry
+! _requires_src_info = f in field_table, which makes the missing-source
+! case legal.
+#override MAX_FIELDS = 200
+!MOM6 photo_acc MLD
+#override PHA_MLD_CALC = True
+#override PHA_MLD_USE_DELTA_RHO = True
+#override PHA_MLD_HREF = 10.0
+#override PHA_MLD_DRHO = 0.03
+#override HREF_FOR_MLD = 10.0 
+#override DIAG_MLD_DENSITY_DIFF = 0.03
+! ---------------------------------------------------------------------
+! 3-D RESTORING of T, S, no3, po4, sio4, dic and alk toward climatology.
+! OFF by default. To turn on, set SPONGE and DO_SPONGE_GENERIC_TRACER to True
+! (SPONGE alone restores T/S only). The timescale is set when the files are
+! built: SPONGE_DAYS=<days> ./setup_station.sh <station> (default 90 days).
+! Use with caution; see README.md, "Optional: 3-D restoring".
+#override SPONGE = False
+#override SPONGE_CONFIG = "file"
+#override SPONGE_UV = False
+#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
+#override SPONGE_IDAMP_VAR = "Idamp"
+#override SPONGE_STATE_FILE = "sponge_state_woa13.nc"
+#override SPONGE_PTEMP_VAR = "ptemp_an"
+#override SPONGE_SALT_VAR = "s_an"
+#override INTERPOLATE_SPONGE_TIME_SPACE = True
+#override SPONGE_DATA_ONGRID = True
+! COBALT tracers (SPONGE_GT_DAMPING_FILE is required but not used).
+#override DO_SPONGE_GENERIC_TRACER = False
+#override SPONGE_GT_DAMPING_FILE = "sponge_damping.nc"
+#override DO_SPONGE_GT_no3 = True
+#override SPONGE_GT_no3_FILE = "sponge_bgc.nc"
+#override DO_SPONGE_GT_po4 = True
+#override SPONGE_GT_po4_FILE = "sponge_bgc.nc"
+#override DO_SPONGE_GT_sio4 = True
+#override SPONGE_GT_sio4_FILE = "sponge_bgc.nc"
+#override DO_SPONGE_GT_dic = True
+#override SPONGE_GT_dic_FILE = "sponge_bgc.nc"
+#override DO_SPONGE_GT_alk = True
+#override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
+! ---------------------------------------------------------------------
+
+
+#override SPONGE = True
+#override INTERPOLATE_SPONGE_TIME_SPACE = True
+#override SPONGE_DATA_ONGRID = True
+#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
+#override SPONGE_STATE_FILE = "sponge_ts.nc"
+#override SPONGE_PTEMP_VAR = "temp"
+#override SPONGE_SALT_VAR = "salt"
+#override DO_SPONGE_GENERIC_TRACER = True
+#override SPONGE_GT_DAMPING_FILE = "sponge_damping.nc"
+#override DO_SPONGE_GT_o2 = True
+#override SPONGE_GT_o2_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_o2_VAR = "o2"
+#override DO_SPONGE_GT_no3 = True
+#override SPONGE_GT_no3_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_no3_VAR = "no3"
+#override DO_SPONGE_GT_dic = True
+#override SPONGE_GT_dic_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_dic_VAR = "dic"
+#override DO_SPONGE_GT_alk = True
+#override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_alk_VAR = "alk"

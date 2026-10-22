@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --nodes=1
+#SBATCH --time=01:00:00
+#SBATCH --job-name="1D_cobalt_cbed_dalton"
+#SBATCH --output=1D_cobalt_cbed_dalton.out
+#SBATCH --error=1D_cobalt_cbed_dalton.err
+#SBATCH --partition=sharing
+#SBATCH --constraint=cascadelake
+#SBATCH --nodelist=d0011
+
+echo "Model started:  " `date`
+
+
+ln -sfn input.nml_1yr input.nml
+ln -sfn diag_table_no_daily diag_table
+source intel_long.env
+
+mpiexec -np 1 ./mom6
+
+echo "Model ended:    " `date`
