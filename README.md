@@ -577,8 +577,39 @@ from mol m-3 to mol kg-1 with `RHO_0 = 1035`.
 `clim` and `YYYY` write one 12-month cycle that FMS repeats every year. A range
 writes the real months on a calendar axis, padded with the December before and
 the January after, and the run must stay inside it. The timescale is the last
-argument. To use the files, uncomment the second sponge block at the end of
-`MOM_override`. Do not enable both blocks at once.
+argument.
+
+**To use the files,** change the 3-D restoring block in `MOM_override` to the
+settings below, and drop its `DO_SPONGE_GT_po4` and `DO_SPONGE_GT_sio4` lines:
+these files have no po4 or sio4. `#override` lines are settings, not comments,
+so edit that block rather than adding a second one next to it, or MOM6 sees
+each parameter twice.
+
+```
+#override SPONGE = True
+#override INTERPOLATE_SPONGE_TIME_SPACE = True
+#override SPONGE_DATA_ONGRID = True
+#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
+#override SPONGE_STATE_FILE = "sponge_ts.nc"
+#override SPONGE_PTEMP_VAR = "temp"
+#override SPONGE_SALT_VAR = "salt"
+#override DO_SPONGE_GENERIC_TRACER = True
+#override SPONGE_GT_DAMPING_FILE = "sponge_damping.nc"
+#override DO_SPONGE_GT_o2 = True
+#override SPONGE_GT_o2_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_o2_VAR = "o2"
+#override DO_SPONGE_GT_no3 = True
+#override SPONGE_GT_no3_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_no3_VAR = "no3"
+#override DO_SPONGE_GT_dic = True
+#override SPONGE_GT_dic_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_dic_VAR = "dic"
+#override DO_SPONGE_GT_alk = True
+#override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_alk_VAR = "alk"
+```
+
+`setup_sponge_station.sh` prints the same list after each build.
 
 Do not run two `setup_sponge_station.sh` jobs for the same station at once:
 both write the same files.

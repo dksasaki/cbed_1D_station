@@ -80,7 +80,7 @@
 ! (SPONGE alone restores T/S only). The timescale is set when the files are
 ! built: SPONGE_DAYS=<days> ./setup_station.sh <station> (default 90 days).
 ! Use with caution; see README.md, "Optional: 3-D restoring".
-#override SPONGE = False
+#override SPONGE = True
 #override SPONGE_CONFIG = "file"
 #override SPONGE_UV = False
 #override SPONGE_DAMPING_FILE = "sponge_damping.nc"
@@ -104,26 +104,3 @@
 #override DO_SPONGE_GT_alk = True
 #override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
 ! ---------------------------------------------------------------------
-
-
-#override SPONGE = True
-#override INTERPOLATE_SPONGE_TIME_SPACE = True
-#override SPONGE_DATA_ONGRID = True
-#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
-#override SPONGE_STATE_FILE = "sponge_ts.nc"
-#override SPONGE_PTEMP_VAR = "temp"
-#override SPONGE_SALT_VAR = "salt"
-#override DO_SPONGE_GENERIC_TRACER = True
-#override SPONGE_GT_DAMPING_FILE = "sponge_damping.nc"
-#override DO_SPONGE_GT_o2 = True
-#override SPONGE_GT_o2_FILE = "sponge_bgc.nc"
-#override SPONGE_GT_o2_VAR = "o2"
-#override DO_SPONGE_GT_no3 = True
-#override SPONGE_GT_no3_FILE = "sponge_bgc.nc"
-#override SPONGE_GT_no3_VAR = "no3"
-#override DO_SPONGE_GT_dic = True
-#override SPONGE_GT_dic_FILE = "sponge_bgc.nc"
-#override SPONGE_GT_dic_VAR = "dic"
-#override DO_SPONGE_GT_alk = True
-#override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
-#override SPONGE_GT_alk_VAR = "alk"
