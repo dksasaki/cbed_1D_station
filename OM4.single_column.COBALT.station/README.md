@@ -197,6 +197,14 @@ sbatch run_years.sh 1993 1995
 
 See [Consecutive-year runs](#consecutive-year-runs-yearly-forcing) below.
 
+### One year, repeated
+
+```bash
+sbatch run_repeat.sh 1993 10
+```
+
+See [Repeat-year runs of one year](#repeat-year-runs-of-one-year) below.
+
 ### Configuration: `input.nml` and `diag_table`
 
 Both are symlinks to tracked variants, so switching is a `ln -sfn` rather than
@@ -204,7 +212,7 @@ an edit:
 
 | symlink | variants |
 |---|---|
-| `input.nml` | `input.nml_1yr` (12 months), `input.nml_2day` (quick check), `input.nml_1yr_rst` (restart segment, used by `run_multiyear.sh`), `input.nml_years` (written by `run_years.sh` for each year; do not edit) |
+| `input.nml` | `input.nml_1yr` (12 months), `input.nml_2day` (quick check), `input.nml_1yr_rst` (restart segment, used by `run_multiyear.sh`), `input.nml_years` (written by `run_years.sh` for each year; do not edit), `input.nml_repeat` (written by `run_repeat.sh` for each segment; do not edit) |
 | `diag_table` | `diag_table_no_daily` (monthly + annual, plus daily T/S and daily CBED fields), `diag_table_with_daily` (adds daily output) |
 
 All namelists start 2004-01-01, the year the default forcing covers;
@@ -379,6 +387,35 @@ receives the new restarts as a subdirectory rather than being replaced.
 
 The experiment path is set at the top of the script; change it, or set
 `EXPDIR`, if you move the experiment.
+
+## Repeat-year runs of one year
+
+```bash
+sbatch run_repeat.sh 1993 10                     # ten segments of 1993
+sbatch run_repeat.sh 1993 10 cbed_init.nc        # another CBED initial state (relative to INPUT/)
+```
+
+This is `run_multiyear.sh`'s repeat-year forcing for any year with padded
+JRA55-do v1.5.0 files, with CBED. Every segment links `INPUT/JRA_*.nc` to the
+same year and starts on `<year>-01-01`. The first segment is a cold start from
+the CBED state; each later one reads the previous segment's restarts with
+`force_date_from_namelist = .true.`, so the clock goes back to the start of
+the year while the ocean, sea-ice, BGC and sediment state carry on.
+
+```
+history/segNN/    diagnostics, ocean.stats and logs for that segment
+RESTART_segNN/    restarts at the end of that segment; the last is the final state
+```
+
+A segment whose `RESTART_segNN` exists is skipped, so rerunning the same
+command continues after the last finished segment. Before that, move away the
+failed segment's `history/segNN` and any leftover `RESTART/`.
+
+Use a sponge built from the same year (`setup_sponge_station.sh <name> build
+1993 <tau>`): its 12-month cycle repeats every year, as the forcing does. A
+range file (`build 1993-1994`) would not line up once the clock is reset.
+
+Ten segments take about 5 hours on one core.
 
 ## Differences between this experiment and OM4.single_column.COBALT
 
