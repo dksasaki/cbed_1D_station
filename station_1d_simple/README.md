@@ -34,7 +34,7 @@ my_experiment/
     └── RESTART_<segment>/       restarts at the end of each segment
 ```
 
-## The steps
+## Building the experiment
 
 ```bash
 cp -r station_1d_simple /path/to/my_experiment
@@ -82,7 +82,7 @@ use `SEGS_PER_JOB=9`. To run everything in one long job instead, set
 
 Steps 3 and `run.sh` read `MODE`. If you change it, rerun step 3.
 
-## Model files you may edit (all in `model/`)
+## Templates of model files (`model/`)
 
 These are plain files. Nothing generates them.
 
@@ -99,3 +99,7 @@ These are plain files. Nothing generates them.
 - NEUS25 COBALT in `COBALT_DIR` has **1993 only**. Step 3 needs every month of the run years, so nudging works for 1993 until more years are added.
 - JRA55-do forcing exists for 1993–1997.
 - The biot_bioi executable **stops** if the `cbed_jpoc_mean` line is commented. The sinksource executable ignores it.
+
+
+## Disclaimer
+The instructions, and parts of the code used for submission were written with Claude (Anthropic).
