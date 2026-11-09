@@ -19,8 +19,8 @@
 ## 1. Get the code
 
 ```bash
-git clone https://github.com/dksasaki/OM4.single_column.COBALT.CBED.station.git
-cd OM4.single_column.COBALT.CBED.station
+git clone https://github.com/dksasaki/cbed_1D_station.git
+cd cbed_1D_station
 ```
 
 ## 2. Install the tools (once per clone)
@@ -48,3 +48,5 @@ which is specific to the cluster.
 
 ## Disclaimer
 The instructions, and parts of the code used for submission were written with Claude (Anthropic).
+
+This experiments were originally created based on [Jessica Luo's OM5.single_column.COBALT.station](https://github.com/jessluo/CEFI-regional-MOM6/tree/add-relocatable-single-column-station/exps/OM4.single_column.COBALT.station) and [MOM6-COBALT-NEUS25](https://github.com/dksasaki/MOM6_COBALT_NEUS25)
