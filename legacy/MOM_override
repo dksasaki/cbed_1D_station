@@ -75,32 +75,30 @@
 #override HREF_FOR_MLD = 10.0 
 #override DIAG_MLD_DENSITY_DIFF = 0.03
 ! ---------------------------------------------------------------------
-! 3-D RESTORING of T, S, no3, po4, sio4, dic and alk toward climatology.
+! 3-D RESTORING of T, S, no3, dic and alk toward climatology.
 ! OFF by default. To turn on, set SPONGE and DO_SPONGE_GENERIC_TRACER to True
 ! (SPONGE alone restores T/S only). The timescale is set when the files are
 ! built: SPONGE_DAYS=<days> ./setup_station.sh <station> (default 90 days).
 ! Use with caution; see README.md, "Optional: 3-D restoring".
 #override SPONGE = True
-#override SPONGE_CONFIG = "file"
-#override SPONGE_UV = False
-#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
-#override SPONGE_IDAMP_VAR = "Idamp"
-#override SPONGE_STATE_FILE = "sponge_state_woa13.nc"
-#override SPONGE_PTEMP_VAR = "ptemp_an"
-#override SPONGE_SALT_VAR = "s_an"
 #override INTERPOLATE_SPONGE_TIME_SPACE = True
 #override SPONGE_DATA_ONGRID = True
-! COBALT tracers (SPONGE_GT_DAMPING_FILE is required but not used).
-#override DO_SPONGE_GENERIC_TRACER = False
+#override SPONGE_DAMPING_FILE = "sponge_damping.nc"
+#override SPONGE_STATE_FILE = "sponge_ts.nc"
+#override SPONGE_PTEMP_VAR = "temp"
+#override SPONGE_SALT_VAR = "salt"
+#override DO_SPONGE_GENERIC_TRACER = True
 #override SPONGE_GT_DAMPING_FILE = "sponge_damping.nc"
+#override DO_SPONGE_GT_o2 = True
+#override SPONGE_GT_o2_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_o2_VAR = "o2"
 #override DO_SPONGE_GT_no3 = True
 #override SPONGE_GT_no3_FILE = "sponge_bgc.nc"
-#override DO_SPONGE_GT_po4 = True
-#override SPONGE_GT_po4_FILE = "sponge_bgc.nc"
-#override DO_SPONGE_GT_sio4 = True
-#override SPONGE_GT_sio4_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_no3_VAR = "no3"
 #override DO_SPONGE_GT_dic = True
 #override SPONGE_GT_dic_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_dic_VAR = "dic"
 #override DO_SPONGE_GT_alk = True
 #override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_alk_VAR = "alk"
 ! ---------------------------------------------------------------------

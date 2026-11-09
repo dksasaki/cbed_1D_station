@@ -49,4 +49,4 @@
 # uncomment the next line and run step 4 (python3 4_make_jpoc.py). The biot_bioi build stops
 # (FATAL) without it; the sinksource build does not read it.
 # The file holds time-mean fntot_btm (mol N m-2 s-1); 106/16 = 6.625 converts N to C.
-# "OCN", "cbed_jpoc_mean",            "fntot_btm",    "./INPUT/fntot_btm_mean.nc",           "bilinear", 6.625
+"OCN", "cbed_jpoc_mean",            "fntot_btm",    "./INPUT/fntot_btm_mean.nc",           "bilinear", 6.625

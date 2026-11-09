@@ -1,0 +1,43 @@
+# The tools for the preparation steps of station_1d_simple
+# (1_make_grid.sh ... 4_make_jpoc.py). Install once per clone, here:
+#
+#   pixi install                    # python, nco, netcdf, compilers -> .pixi/
+#   pixi run install-fre-nctools    # builds FRE-NCtools             -> opt/fre-nctools/
+#
+# An experiment's config.sh then puts both on PATH (PIXI_ROOT there = this folder).
+# The model itself (run.sh) does not use this environment.
+
+[workspace]
+name = "station_1d"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[dependencies]
+# python steps 2-4
+python = "3.12.*"
+numpy = "*"
+xarray = "*"
+dask = "*"          # xr.open_mfdataset in 4_make_jpoc.py
+netcdf4 = "*"
+cftime = "*"
+# netCDF command-line tools (ncdump, ncks, ...)
+nco = "*"
+libnetcdf = "*"
+# to build FRE-NCtools (step 1)
+netcdf-fortran = "*"
+c-compiler = "*"
+fortran-compiler = "*"
+autoconf = "*"
+automake = "*"
+libtool = "*"
+make = "*"
+pkg-config = "*"
+git = "*"
+
+[activation.env]
+# so that "pixi shell" / "pixi run" also find the FRE-NCtools programs
+PATH = "$PIXI_PROJECT_ROOT/opt/fre-nctools/bin:$PATH"
+
+[tasks]
+install-fre-nctools = "bash install_fre_nctools.sh"

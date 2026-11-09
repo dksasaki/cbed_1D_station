@@ -36,7 +36,9 @@ GLORYS_DIR=/home/d.sasaki/schultz/data/glorys/nwa25_regional/monthly_average
 COBALT_DIR=/home/d.sasaki/scratch/temp/202609_delete/outputs_raw/iteration1    # NEUS25 COBALT, 1993 only
 
 # --- tools -------------------------------------------------------------------
-FRE_NCTOOLS=/home/d.sasaki/work/FRE-NCtools/build/bin
-PYTHON_BIN=/projects/schultz/d.sasaki/km_scale_model/mom6cobalt_25th/20240723_zstar/tasks/202603_tasks_seabed/general_evaluation/.pixi/envs/default/bin
+# the repository clone: the folder with pixi.toml, where "pixi install" and
+# "pixi run install-fre-nctools" were run (see README). The default works for
+# station_1d_simple inside the repo; for a copy elsewhere, put the clone's path here.
+PIXI_ROOT=$(dirname "$PWD")
 
-export PATH="$PYTHON_BIN:$FRE_NCTOOLS:$PATH"
+export PATH="$PIXI_ROOT/.pixi/envs/default/bin:$PIXI_ROOT/opt/fre-nctools/bin:$PATH"

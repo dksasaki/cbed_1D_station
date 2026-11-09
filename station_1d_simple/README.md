@@ -37,10 +37,13 @@ my_experiment/
 ## Building the experiment
 
 ```bash
+# once per clone, in the repository folder: see "Installing the tools" below
+pixi install && pixi run install-fre-nctools
+
 cp -r station_1d_simple /path/to/my_experiment
 cd /path/to/my_experiment
 
-# edit config.sh: station, executable, run mode, data paths
+# edit config.sh: station, executable, run mode, data paths, PIXI_ROOT
 source config.sh                # puts FRE-NCtools and python on PATH (once per shell)
 
 ./0_link_data.sh                # global inputs  -> model/INPUT/*.nc (links), model/mom6, experiment.txt
@@ -94,6 +97,33 @@ These are plain files. Nothing generates them.
 | `model/input.nml.base` | the namelist. `run.sh` fills in the `@...@` placeholders for each segment and writes `model/input.nml` |
 | `model/MOM_input`, `model/SIS_*`, `model/field_table` | the physics and BGC setup, shared with the other station templates |
 
+## Installing the tools (pixi)
+
+Steps 1–4 need python (numpy, xarray, dask, netCDF4, cftime) and the
+FRE-NCtools programs. `pixi.toml`, in the repository folder (one level up),
+installs both there. Install [pixi](https://pixi.sh) and then run, once per
+clone, in the repository folder:
+
+```bash
+pixi install                    # python, nco, netCDF, compilers -> .pixi/
+pixi run install-fre-nctools    # clones and builds FRE-NCtools  -> opt/fre-nctools/bin/
+```
+
+`install_fre_nctools.sh` does the build: it clones
+[FRE-NCtools](https://github.com/NOAA-GFDL/FRE-NCtools) into
+`opt/FRE-NCtools-src/`, then runs `autoreconf`, `configure`, `make` and
+`make install` with the compilers and netCDF from `.pixi/`.
+
+`source config.sh` then puts `$PIXI_ROOT/.pixi/envs/default/bin` and
+`$PIXI_ROOT/opt/fre-nctools/bin` on PATH (no `pixi shell` needed). All
+experiments share this one installation. `PIXI_ROOT` defaults to the folder
+above the experiment, which is right for `station_1d_simple` inside the
+repository. For a copy elsewhere, set it to the path of the clone.
+
+The model (`run.sh`) does not use this environment. It uses `model/env.sh`.
+
+
+
 ## Limits
 
 - NEUS25 COBALT in `COBALT_DIR` has **1993 only**. Step 3 needs every month of the run years, so nudging works for 1993 until more years are added.
@@ -101,5 +131,3 @@ These are plain files. Nothing generates them.
 - The biot_bioi executable **stops** if the `cbed_jpoc_mean` line is commented. The sinksource executable ignores it.
 
 
-## Disclaimer
-The instructions, and parts of the code used for submission were written with Claude (Anthropic).
