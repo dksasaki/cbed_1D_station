@@ -1,5 +1,11 @@
 # Single-column MOM6 + SIS2 + COBALT + CBED at a station
 
+> **Note.** This setup was built and run on a private HPC system. It does
+> **not** include instructions to compile the MOM6-SIS2-COBALT-CBED
+> executable: you need your own build (`EXE` in `config.sh`). The paths in
+> `config.sh` (executable, input data) and the modules and libraries in
+> `model/env.sh` are those of that system, and must be changed for yours.
+
 ```
 ./
 ├── README.md
@@ -10,16 +16,23 @@
 └── legacy/                   the earlier template, kept for reference
 ```
 
-## 1. Install the tools (once per clone)
+## 1. Get the code
 
-Install [pixi](https://pixi.sh), then, in this folder:
+```bash
+git clone https://github.com/dksasaki/OM4.single_column.COBALT.CBED.station.git
+cd OM4.single_column.COBALT.CBED.station
+```
+
+## 2. Install the tools (once per clone)
+
+Install [pixi](https://pixi.prefix.dev/latest/installation/), then, in this folder:
 
 ```bash
 pixi install                    # python, nco, netCDF, compilers -> .pixi/
 pixi run install-fre-nctools    # clones and builds FRE-NCtools  -> opt/fre-nctools/bin/
 ```
 
-## 2. Make an experiment
+## 3. Make an experiment
 
 ```bash
 cp -r station_1d_simple /path/to/my_experiment
