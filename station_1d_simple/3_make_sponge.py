@@ -41,7 +41,7 @@ BGC_VARIABLES = {
     "dic":  ("dissic", 1.0 / RHO_0),     # mol m-3
     "alk":  ("talk",   1.0 / RHO_0),     # mol m-3
 }
-MIN_RECORDS = 6                 # COBALT has about 8 four-day records per month
+MIN_RECORDS = 1                 # 202611_nocbed has one monthly mean per month (4-day files had about 8)
 
 
 def read_config(path="config.sh"):
@@ -197,7 +197,7 @@ z_attrs = {"units": "m", "positive": "down", "cartesian_axis": "Z"}
 def write(ds, path):
     encoding = {name: {"dtype": "f4", "_FillValue": FILL, "missing_value": FILL} for name in ds.data_vars}
     encoding.update({name: {"_FillValue": None} for name in ds.coords})
-    ds.to_netcdf(path, format="NETCDF3_64BIT_OFFSET", unlimited_dims=["time"], encoding=encoding)
+    ds.to_netcdf(path, format="NETCDF3_64BIT", unlimited_dims=["time"], encoding=encoding)
 
 
 sponge_ts = xr.Dataset({"temp": monthly_series(temp).assign_attrs(units="degC"),
@@ -215,7 +215,7 @@ tau = float(config["SPONGE_TAU"])
 idamp = xr.DataArray(np.full(lon.shape, 1.0 / (tau * 86400.0)), dims=("y", "x"),
                      attrs={"units": "s-1", "long_name": f"inverse nudging timescale (tau = {tau:g} days)"})
 damping = xr.Dataset({"Idamp": idamp}).assign_coords(**station_xy)
-damping.to_netcdf(f"{folder}/sponge_damping.nc", format="NETCDF3_64BIT_OFFSET",
+damping.to_netcdf(f"{folder}/sponge_damping.nc", format="NETCDF3_64BIT",
                   encoding={name: {"_FillValue": None} for name in damping.variables})
 
 with open(f"{folder}/build.log", "w") as f:

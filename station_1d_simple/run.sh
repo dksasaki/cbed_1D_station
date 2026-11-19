@@ -84,11 +84,11 @@ for segment in $SEGMENTS; do
         echo "    earlier attempt moved to model/$keep"
     fi
 
-    # 4. the atmospheric forcing of that year (JRA55-do v1.5.0)
-    for v in huss prra prsn psl rlds rsds tas uas vas; do
-        ln -sf "$DATASETS"/${v}_*JRA55-do-1-5-0_gr_${year}*.padded.nc "INPUT/JRA_$v.nc"
-        if [ ! -e "INPUT/JRA_$v.nc" ]; then
-            echo "ERROR: no JRA55-do forcing for $v in $year" >&2
+    # 4. the atmospheric forcing of that year (ERA5, as in 202611_nocbed)
+    for v in msl t2m sphum u10 v10 strd ssrd lp sf; do
+        ln -sf "$ERA5_DIR/ERA5_${v}_${year}_padded.nc" "INPUT/ERA5_$v.nc"
+        if [ ! -e "INPUT/ERA5_$v.nc" ]; then
+            echo "ERROR: no ERA5 forcing for $v in $year" >&2
             exit 1
         fi
     done

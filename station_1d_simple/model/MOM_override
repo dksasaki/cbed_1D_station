@@ -2,7 +2,7 @@
 #override REENTRANT_Y = True
 #override REENTRANT_X = True
 #override THICKNESS_CONFIG = "coord"
-#override ALE_COORDINATE_CONFIG = "FNC1:2,6500,6,.01"
+#override ALE_COORDINATE_CONFIG = "FILE:vgrid_75_2m.nc,dz"
 #override REGRIDDING_COORDINATE_MODE = "Z*"
 #override Z_INIT_REMAPPING_SCHEME = "PPM_IH4" 
 #override Z_INIT_REMAP_OLD_ALG = True
@@ -18,10 +18,10 @@
 ! (TEMP_Z_INIT_FILE, SALT_Z_INIT_FILE, Z_INIT_FILE_PTEMP_VAR,
 !  Z_INIT_FILE_SALT_VAR, Z_INIT_ALE_REMAPPING); they were inert only
 ! because INIT_LAYERS_FROM_Z_FILE was overridden to False.
-#override INIT_LAYERS_FROM_Z_FILE = True
+#override INIT_LAYERS_FROM_Z_FILE = False   ! T and S come from TS_FILE (glorys_ic_station.nc, made by 2b_make_glorys.py)
 ! ---------------------------------------------------------------------
 !
-#override KD = 5.e-4
+#override KD = 1.0E-06
 #override RESOLN_SCALED_KH = False
 #override RESOLN_SCALED_KHTH = False
 #override HENYEY_IGW_BACKGROUND = False
@@ -61,8 +61,8 @@
 #override DO_GEOTHERMAL = True 
 #override GEOTHERMAL_SCALE = 0.0
 ! GENERIC_TRACER_IC_FILE deliberately NOT set: every COBALT tracer is
-! initialised through its *_src_file entry in field_table (global WOA13,
-! GLODAPv2 and cobaltv3_tracer_source.nc), or cold-starts from the tracer's
+! initialised through its *_src_file entry in field_table (all from
+! bgc_woa_esper_ics_1993_2023-04_update2.nc, as in 202611_nocbed), or cold-starts from the tracer's
 ! const_init_value where no global source exists. Those tracers carry
 ! _requires_src_info = f in field_table, which makes the missing-source
 ! case legal.
@@ -107,3 +107,56 @@
 #override DO_SPONGE_GT_alk = True
 #override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
 #override SPONGE_GT_alk_VAR = "alk"
+
+#override DIAG_COORD_DEF_Z = "FILE:diag_dz.nc,dz"
+
+#override USE_KPP = True
+
+#override KD_MIN_TR = 1.0E-06
+
+#override EPBL_LANGMUIR_SCHEME = "ADDITIVE"
+
+#override EPBL_MLD_BISECTION = True
+
+#override EPBL_MSTAR_SCHEME = "REICHL_H18"
+
+#override EPBL_VEL_SCALE_FACTOR = 0.5477
+
+#override EPBL_VEL_SCALE_SCHEME = "REICHL_H18"
+
+#override RH18_MSTAR_CN3 = -6.0
+
+#override VERTEX_SHEAR = True
+
+#override DYNAMIC_VISCOUS_ML = True
+
+#override KV_ML_INVZ2 = 0.01
+
+#override VSTAR_SURF_FAC = 1.8258
+
+#override WSTAR_USTAR_COEF = 15.0
+
+#override CDRAG = 0.001
+
+#override BBL_EFFIC = 0.0
+
+#override FRAZIL = True
+
+#override DO_RIVERMIX = True
+
+
+#override RIVERMIX_DEPTH = 5.0
+
+#override USE_LEGACY_DIABATIC_DRIVER = False
+
+#override REMAPPING_USE_OM4_SUBCELLS = False
+
+#override USE_HUYNH_STENCIL_BUG = True
+
+#override CALC_RHO_FOR_SEA_LEVEL = True
+
+#override LIGHTEST_DENSITY = 1024.0
+
+#override BRUSHCUTTER_MODE = True
+
+#override IGNORE_FLUXES_OVER_LAND = True

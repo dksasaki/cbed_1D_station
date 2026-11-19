@@ -99,7 +99,7 @@ for name in station.variables:
     source_name = layer_dim if name == "lev" else name
     dtype = regional[source_name].dtype if source_name in regional.variables else station[name].dtype
     encoding[name] = {"dtype": dtype, "_FillValue": station[name].attrs.pop("_FillValue", None)}
-station.to_netcdf(f"{folder}/generic_CBED.res.nc", format="NETCDF3_64BIT_OFFSET", encoding=encoding)
+station.to_netcdf(f"{folder}/generic_CBED.res.nc", format="NETCDF3_64BIT", encoding=encoding)
 
 with open(f"{folder}/build.log", "w") as f:
     f.write("\n".join(report) + "\n")

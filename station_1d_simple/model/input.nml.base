@@ -120,7 +120,10 @@
 /
 
  &surface_flux_nml
-            ncar_ocean_flux = .true.
+            ncar_ocean_flux_multilevel = .true.
+            bulk_zu = 10.
+            bulk_zt = 2.
+            bulk_zq = 2.
 	    raoult_sat_vap = .true.
 /
 
@@ -140,12 +143,15 @@
        do_generic_COBALT=.true.
        do_generic_SF6=.false.
        force_update_fluxes=.true.
-       as_param='W92'
-       do_vertfill_post=.false.
+       as_param='unused'
+       do_vertfill_post=.true.
 /
  &generic_COBALT_nml
        co2_calc = 'mocsy'
-       imbalance_tolerance=1.0e-9
+       imbalance_tolerance=1.0e-6
+       as_param_cobalt='W92'
+       do_external_source=.false.
+       do_external_sink=.false.
        do_cbed = .true.
 /
 

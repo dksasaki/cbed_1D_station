@@ -7,29 +7,26 @@
 # Writes  model/INPUT/*.nc     (links), model/mom6 (link)
 #         experiment.txt       a summary of this experiment's settings
 #
-# The atmospheric forcing (model/INPUT/JRA_*.nc) is linked later by run.sh,
+# The atmospheric forcing (model/INPUT/ERA5_*.nc) is linked later by run.sh,
 # because it changes with the year being simulated.
 #
 set -e
 source config.sh
 mkdir -p model/INPUT
 
-# initial conditions: temperature and salinity (WOA13, monthly)
-ln -sf "$DATASETS/woa13_decav_ptemp_monthly_fulldepth_01.nc" model/INPUT/
-ln -sf "$DATASETS/woa13_decav_s_monthly_fulldepth_01.nc"     model/INPUT/
+# initial conditions, the same files as 202611_nocbed (NWA25 grid, read and interpolated by the model):
+# temperature and salinity (GLORYS, 2018-01-01; matches YEAR0) and all BGC tracers
+ln -sf "$IC_DIR/glorys_ic_2018-01-01.nc"                        model/INPUT/
+ln -sf "$IC_DIR/bgc_woa_esper_ics_1993_2023-04_update2.nc"      model/INPUT/
 
-# initial conditions: nutrients and O2 (WOA13, annual), DIC and Alk (GLODAPv2), all other COBALT tracers
-ln -sf "$DATASETS/woa13_all_n_annual_01.nc"                  model/INPUT/
-ln -sf "$DATASETS/woa13_all_o_annual_01.nc"                  model/INPUT/
-ln -sf "$DATASETS/woa13_all_p_annual_01.nc"                  model/INPUT/
-ln -sf "$DATASETS/woa13_all_i_annual_01.nc"                  model/INPUT/
-ln -sf "$DATASETS/GLODAPv2.2016b.oi-filled.20180322.nc"      model/INPUT/
-ln -sf "$DATASETS/cobaltv3_tracer_source.nc"                 model/INPUT/
+# vertical grid (75 layers, 2 m at the top) and the z diagnostic grid, as in 202611_nocbed
+ln -sf "$IC_DIR/vgrid_75_2m.nc"                                 model/INPUT/
+ln -sf "$IC_DIR/diag_dz.nc"                                     model/INPUT/
 
-# atmospheric deposition of iron, dust and nitrogen (pre-industrial climatologies)
-ln -sf "$DATASETS/Soluble_Fe_Flux_PI.nc"                     model/INPUT/
-ln -sf "$DATASETS/Mineral_Fe_Flux_PI.nc"                     model/INPUT/
-ln -sf "$DATASETS/depflux_total.mean.1860.nc"                model/INPUT/
+# atmospheric deposition of iron, dust and nitrogen (ESM4 1993-2014 climatologies, wet and dry)
+for v in dryfe wetfe drydust wetdust drynoy wetnoy drynh4 wetnh4; do
+    ln -sf "$DEPOSITION_DIR/esm4_${v}_climo_1993-2014.nc"    model/INPUT/
+done
 
 # other model inputs
 ln -sf "$DATASETS/seawifs-clim-1997-2010.1440x1080.v20180328.nc" model/INPUT/

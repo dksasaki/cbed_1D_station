@@ -1,2 +1,27 @@
 ! Blank file in which we can put "overrides" for parameters
 ADD_DIURNAL_SW = False ! This must ONLY be used in the ice-ocean mode, NOT fully coupled mode.
+
+
+#override CP_BRINE = 2100.0
+
+#override DT_ICE_DYNAMICS = 400.0
+
+#override DT_RHEOLOGY = 10.0
+
+#override ICE_BULK_SALINITY = 0.0
+
+#override ICE_DELTA_EDD_R_ICE = 1.0
+
+#override ICE_DELTA_EDD_R_POND = 1.0
+
+#override ICE_DELTA_EDD_R_SNOW = 1.0
+
+#override ICE_RELATIVE_SALINITY = 0.1
+
+#override SIS2_FILLING_FRAZIL = False
+
+#override SIS_CONTINUITY_SCHEME = "PCM"
+
+#override SIS_THICKNESS_ADVECTION_SCHEME = "PCM"
+
+#override SIS_TRACER_ADVECTION_SCHEME = "PPM:H3"

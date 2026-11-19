@@ -149,7 +149,7 @@ DTFREEZE_DP = -7.75E-08         !   [deg C Pa-1] default = 0.0
 ! === module ideal_age_example ===
 
 ! === module MOM_coord_initialization ===
-COORD_CONFIG = "none"           !
+COORD_CONFIG = "ALE"   !
                                 ! This specifies how layers are to be defined:
                                 !     ALE or none - used to avoid defining layers in ALE mode
                                 !     file - read coordinate information from the file
@@ -169,7 +169,7 @@ COORD_CONFIG = "none"           !
                                 !     USER - call a user modified routine.
 COORD_FILE = "layer_coord.nc"   !
                                 ! The file from which the coordinate densities are read.
-REGRIDDING_COORDINATE_MODE = "HYCOM1" ! default = "LAYER"
+REGRIDDING_COORDINATE_MODE = "Z*"   ! default = "LAYER"
                                 ! Coordinate mode for vertical regridding.
                                 ! Choose among the following possibilities:
                                 !  LAYER - Isopycnal or stacked shallow water layers
@@ -186,7 +186,7 @@ BOUNDARY_EXTRAPOLATION = True   !   [Boolean] default = False
                                 ! than PCM. E.g., if PPM is used for remapping, a
                                 ! PPM reconstruction will also be used within
                                 ! boundary cells.
-ALE_COORDINATE_CONFIG = "HYBRID:hycom1_75_800m.nc,sigma2,FNC1:2,4000,4.5,.01" ! default = "UNIFORM"
+ALE_COORDINATE_CONFIG = "FILE:vgrid_75_2m.nc,dz"   ! default = "UNIFORM"
                                 ! Determines how to specify the coordinate
                                 ! resolution. Valid options are:
                                 !  PARAM       - use the vector-parameter ALE_RESOLUTION
@@ -250,27 +250,37 @@ REMAPPING_SCHEME = "PPM_H4"     ! default = "PLM"
 ! Parameters providing information about the lateral grid.
 
 ! === module MOM_state_initialization ===
-INIT_LAYERS_FROM_Z_FILE = True  !   [Boolean] default = False
+INIT_LAYERS_FROM_Z_FILE = False !   [Boolean] default = False
                                 ! If true, intialize the layer thicknesses, temperatures,
                                 ! and salnities from a Z-space file on a latitude-
                                 ! longitude grid.
 
+! station T, S and SSH: read straight from a file on the model grid, as in 202611_nocbed
+! (made by 2b_make_glorys.py)
+TS_CONFIG = "file"
+TS_FILE = "glorys_ic_station.nc"
+SALT_FILE = "glorys_ic_station.nc"
+TEMP_IC_VAR = "temp"
+SALT_IC_VAR = "salt"
+SURFACE_HEIGHT_IC_FILE = "glorys_ic_station.nc"
+SURFACE_HEIGHT_IC_VAR = "ssh"
+
 ! === module MOM_initialize_layers_from_Z ===
-TEMP_SALT_Z_INIT_FILE = ""      ! default = "temp_salt_z.nc"
+TEMP_SALT_Z_INIT_FILE = "glorys_ic_station.nc" ! GLORYS, as in 202611_nocbed (same year as YEAR0)
                                 ! The name of the z-space input file used to initialize
                                 ! temperatures (T) and salinities (S). If T and S are not
                                 ! in the same file, TEMP_Z_INIT_FILE and SALT_Z_INIT_FILE
                                 ! must be set.
-TEMP_Z_INIT_FILE = "woa13_decav_ptemp_monthly_fulldepth_01.nc" ! default = ""
+! TEMP_Z_INIT_FILE = ""         ! default = ""
                                 ! The name of the z-space input file used to initialize
                                 ! temperatures, only.
-SALT_Z_INIT_FILE = "woa13_decav_s_monthly_fulldepth_01.nc" ! default = ""
+! SALT_Z_INIT_FILE = ""         ! default = ""
                                 ! The name of the z-space input file used to initialize
                                 ! temperatures, only.
-Z_INIT_FILE_PTEMP_VAR = "ptemp_an" ! default = "ptemp"
+Z_INIT_FILE_PTEMP_VAR = "temp" ! default = "ptemp"
                                 ! The name of the potential temperature variable in
                                 ! TEMP_Z_INIT_FILE.
-Z_INIT_FILE_SALT_VAR = "s_an"   ! default = "salt"
+Z_INIT_FILE_SALT_VAR = "salt"   ! default = "salt"
                                 ! The name of the salinity variable in
                                 ! SALT_Z_INIT_FILE.
 Z_INIT_ALE_REMAPPING = True     !   [Boolean] default = False
@@ -306,7 +316,7 @@ REGRIDDING_ANSWER_DATE = 20181231 ! default = 99991231
                                 ! robust and accurate forms of mathematically equivalent expressions.
 
 ! === module MOM_set_visc ===
-PRANDTL_TURB = 1.25             !   [nondim] default = 1.0
+PRANDTL_TURB = 0.7   !   [nondim] default = 1.0
                                 ! The turbulent Prandtl number applied to shear
                                 ! instability.
 HBBL = 10.0                     !   [m]
@@ -315,7 +325,7 @@ HBBL = 10.0                     !   [m]
                                 ! the thickness over which near-bottom velocities are
                                 ! averaged for the drag law if BOTTOMDRAGLAW is defined
                                 ! but LINEAR_DRAG is not.
-DRAG_BG_VEL = 0.1               !   [m s-1] default = 0.0
+DRAG_BG_VEL = 0.001   !   [m s-1] default = 0.0
                                 ! DRAG_BG_VEL is either the assumed bottom velocity (with
                                 ! LINEAR_DRAG) or an unresolved  velocity that is
                                 ! combined with the resolved velocity to estimate the
@@ -330,7 +340,7 @@ BBL_THICK_MIN = 0.1             !   [m] default = 0.0
                                 ! used with BOTTOMDRAGLAW. This might be
                                 ! Kv / (cdrag * drag_bg_vel) to give Kv as the minimum
                                 ! near-bottom viscosity.
-KV = 1.0E-04                    !   [m2 s-1]
+KV = 1.0E-06   !   [m2 s-1]
                                 ! The background kinematic viscosity in the interior.
                                 ! The molecular value, ~1e-6 m2 s-1, may be used.
 KV_BBL_MIN = 0.0                !   [m2 s-1] default = 1.0E-04
@@ -419,7 +429,7 @@ V_TRUNC_FILE = "V_velocity_truncations" ! default = ""
                                 ! leading to meridional velocity truncations are written.
                                 ! Undefine this for efficiency if this diagnostic is not
                                 ! needed.
-HMIX_FIXED = 0.5                !   [m]
+HMIX_FIXED = 0.9   !   [m]
                                 ! The prescribed depth over which the near-surface
                                 ! viscosity and diffusivity are elevated when the bulk
                                 ! mixed layer is not used.
@@ -519,11 +529,11 @@ N2_FLOOR_IOMEGA2 = 0.0          !   [nondim] default = 1.0
                                 ! The floor applied to N2(k) scaled by Omega^2:
                                 !   If =0., N2(k) is simply positive definite.
                                 !   If =1., N2(k) > Omega^2 everywhere.
-KD = 1.5E-05                    !   [m2 s-1]
+KD = 1.0E-06   !   [m2 s-1]
                                 ! The background diapycnal diffusivity of density in the
                                 ! interior. Zero or the molecular value, ~1e-7 m2 s-1,
                                 ! may be used.
-KD_MIN = 2.0E-06                !   [m2 s-1] default = 1.5E-07
+KD_MIN = 2.0E-07   !   [m2 s-1] default = 1.5E-07
                                 ! The minimum diapycnal diffusivity.
 KD_MAX = 0.1                    !   [m2 s-1] default = -1.0
                                 ! The maximum permitted increment for the diapycnal
@@ -572,7 +582,7 @@ MIX_LEN_EXPONENT = 1.0          !   [units=nondim] default = 2.0
 MSTAR_CAP = 10.0                !   [units=nondim] default = -1.0
                                 ! Maximum value of mstar allowed in model if non-negative
                                 ! (used if MSTAR_MODE>0).
-MSTAR_CONV_ADJ = 0.667          !   [units=nondim] default = 0.0
+MSTAR_CONV_ADJ = 0.66   !   [units=nondim] default = 0.0
                                 ! Factor used for reducing mstar during convection
                                 !  due to reduction of stable density gradient.
 MSTAR2_COEF1 = 0.29             !   [units=nondim] default = 0.3
@@ -585,7 +595,7 @@ NSTAR = 0.06                    !   [nondim] default = 0.2
                                 ! The portion of the buoyant potential energy imparted by
                                 ! surface fluxes that is available to drive entrainment
                                 ! at the base of mixed layer when that energy is positive.
-TKE_DECAY = 0.01                !   [nondim] default = 2.5
+TKE_DECAY = 0.001   !   [nondim] default = 2.5
                                 ! TKE_DECAY relates the vertical rate of decay of the
                                 ! TKE available for mechanical entrainment to the natural
                                 ! Ekman depth.
@@ -615,17 +625,17 @@ LT_ENHANCE = 3                  !   [nondim] default = 0
                                 !          1 - Van Roekel et al. 2014/Li et al., 2016
                                 !          2 - Multiplied w/ adjusted La.
                                 !          3 - Added w/ adjusted La.
-LT_ENHANCE_COEF = 0.044         !   [nondim] default = 0.447
+LT_ENHANCE_COEF = 0.1056   !   [nondim] default = 0.447
                                 ! Coefficient for Langmuir enhancement if LT_ENHANCE > 1
-LT_ENHANCE_EXP = -1.5           !   [nondim] default = -1.33
+LT_ENHANCE_EXP = -1.0   !   [nondim] default = -1.33
                                 ! Exponent for Langmuir enhancement if LT_ENHANCE > 1
 LT_MOD_LAC1 = 0.0               !   [nondim] default = -0.87
                                 ! Coefficient for modification of Langmuir number due to
                                 !  MLD approaching Ekman depth if LT_ENHANCE=2.
-LT_MOD_LAC4 = 0.0               !   [nondim] default = 0.95
+LT_MOD_LAC4 = 0.8   !   [nondim] default = 0.95
                                 ! Coefficient for modification of Langmuir number due to
                                 !  ratio of Ekman to stable Obukhov depth if LT_ENHANCE=2.
-LT_MOD_LAC5 = 0.22              !   [nondim] default = 0.95
+LT_MOD_LAC5 = 0.8   !   [nondim] default = 0.95
                                 ! Coefficient for modification of Langmuir number due to
                                 !  ratio of Ekman to unstable Obukhov depth if LT_ENHANCE=2.
 EPBL_USTAR_MIN = 1.45842E-18    !   [m s-1]

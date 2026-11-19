@@ -17,6 +17,8 @@ my_experiment/
 ├── 0_link_data.sh            preparation steps, run in order
 ├── 1_make_grid.sh
 ├── 2_make_cbed.py
+├── 2b_make_glorys.py
+├── 2c_make_bgc.py
 ├── 3_make_sponge.py
 ├── 4_make_jpoc.py
 ├── run.sh                    runs the model inside model/
@@ -28,6 +30,8 @@ my_experiment/
     ├── INPUT/
     │   ├── grids/<STATION>/     grid files + make_*.log
     │   ├── cbed/<STATION>/      generic_CBED.res.nc, build.log, source.txt (+ fntot_btm_mean.nc)
+    │   ├── glorys/<STATION>/    glorys_ic_station.nc (T, S, SSH), build.log, source.txt
+    │   ├── bgc/<STATION>/       bgc_ic_station.nc (COBALT tracers), build.log, source.txt
     │   ├── sponge/<STATION>/    sponge_ts/bgc/damping.nc, build.log, build.txt
     │   └── *.nc                 links into the folders above, or to DATASETS
     ├── history/<segment>/       output of each segment
@@ -49,6 +53,8 @@ source config.sh                # puts FRE-NCtools and python on PATH (once per 
 ./0_link_data.sh                # global inputs  -> model/INPUT/*.nc (links), model/mom6, experiment.txt
 ./1_make_grid.sh                # station grid   -> model/INPUT/grids/<STATION>/
 python3 2_make_cbed.py          # CBED initial state -> model/INPUT/cbed/<STATION>/
+python3 2b_make_glorys.py       # T, S, SSH initial state -> model/INPUT/glorys/<STATION>/
+python3 2c_make_bgc.py          # COBALT tracer initial state -> model/INPUT/bgc/<STATION>/
 python3 3_make_sponge.py        # nudging files  -> model/INPUT/sponge/<STATION>/   (a few minutes)
 python3 4_make_jpoc.py          # ONLY for the biot_bioi executable, see below
 
@@ -59,12 +65,14 @@ All steps are run from the experiment folder (the top), not from `model/`.
 
 | step | what it does | reads | writes |
 |---|---|---|---|
-| `0_link_data.sh` | links the files that are the same everywhere (initial conditions, deposition, porosity) and the executable; writes the summary | `DATASETS`, `POROSITY`, `EXE` | `model/INPUT/*.nc`, `model/mom6`, `experiment.txt` |
+| `0_link_data.sh` | links the files that are the same everywhere (initial conditions, deposition, porosity) and the executable; writes the summary | `IC_DIR`, `DEPOSITION_DIR`, `DATASETS`, `POROSITY`, `EXE` | `model/INPUT/*.nc`, `model/mom6`, `experiment.txt` |
 | `1_make_grid.sh` | builds the grid with FRE-NCtools | `LAT`, `LON`, `DEPTH` | `model/INPUT/grids/<STATION>/` (+ one `.log` per program) |
 | `2_make_cbed.py` | copies the nearest wet column of a regional CBED solution into each cell | `CBED_IC` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
+| `2b_make_glorys.py` | copies the nearest ocean cell of the regional GLORYS state into each cell (the regional file has no lon/lat, so MOM6 cannot interpolate it) | `IC_DIR`, `YEAR0` | `model/INPUT/glorys/<STATION>/glorys_ic_station.nc`, `build.log`, `source.txt` |
+| `2c_make_bgc.py` | cuts the regional COBALT tracer state to the station with a finite `_FillValue` (a NaN fill makes MOM6 treat every point as missing) | `IC_DIR` | `model/INPUT/bgc/<STATION>/bgc_ic_station.nc`, `build.log`, `source.txt` |
 | `3_make_sponge.py` | monthly means at the station → nudging files | `MODE`, `YEAR0/1`, `SPONGE_TAU`, `GLORYS_DIR`, `COBALT_DIR` | `model/INPUT/sponge/<STATION>/sponge_ts.nc`, `sponge_bgc.nc`, `sponge_damping.nc`, `build.log`, `build.txt` |
 | `4_make_jpoc.py` | mean POC flux for the biot_bioi build | `COBALT_DIR`, `YEAR0` | `model/INPUT/cbed/<STATION>/fntot_btm_mean.nc` |
-| `run.sh` | runs the segments in `model/`, `SEGS_PER_JOB` per job, then submits the next job | `MODE`, `YEAR0/1`, `NSEG`, `SEGS_PER_JOB`, `DATASETS` | `model/history/<seg>/`, `model/RESTART_<seg>/` |
+| `run.sh` | runs the segments in `model/`, `SEGS_PER_JOB` per job, then submits the next job | `MODE`, `YEAR0/1`, `NSEG`, `SEGS_PER_JOB`, `ERA5_DIR` | `model/history/<seg>/`, `model/RESTART_<seg>/` |
 
 **Jobs.** This follows how the GofME experiments were run. Each job runs at
 most `SEGS_PER_JOB` new segments (default 10; a segment takes about 35–45
@@ -84,6 +92,8 @@ use `SEGS_PER_JOB=9`. To run everything in one long job instead, set
 | `sequential` | the real years `YEAR0 … YEAR1` | `1993, 1994, …` |
 
 Steps 3 and `run.sh` read `MODE`. If you change it, rerun step 3.
+
+The value must be exactly `repeat` or `sequential`. `run.sh` and step 3 test only for `repeat`, so any other word (for example `repeated`) is run as `sequential`.
 
 ## Templates of model files (`model/`)
 
@@ -126,8 +136,8 @@ The model (`run.sh`) does not use this environment. It uses `model/env.sh`.
 
 ## Limits
 
-- NEUS25 COBALT in `COBALT_DIR` has **1993 only**. Step 3 needs every month of the run years, so nudging works for 1993 until more years are added.
-- JRA55-do forcing exists for 1993–1997.
+- `COBALT_DIR` (202611_nocbed) has monthly means for 2018-01 to 2021-02, and GLORYS ends in 2019. Step 3 needs every month of the run years, so `sequential` runs stay within 2018–2019. `repeat` mode only needs `YEAR0` (2018 here, as in `config.sh`).
+- Forcing is ERA5 (`ERA5_DIR`, 1993–2025); `run.sh` links the year being run. GLORYS monthly means exist for 1993–2019.
 - The biot_bioi executable **stops** if the `cbed_jpoc_mean` line is commented. The sinksource executable ignores it.
 
 
