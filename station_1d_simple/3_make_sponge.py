@@ -6,7 +6,7 @@ Reads   config.sh               STATION, MODE, YEAR0, YEAR1, SPONGE_TAU, GLORYS_
         model/INPUT/ocean_hgrid.nc    the station grid from step 1
 Writes  model/INPUT/sponge/<STATION>/
             sponge_ts.nc        temp, salt                         (GLORYS monthly means)
-            sponge_bgc.nc       o2, no3, po4, sio4, dic, alk       (NEUS25 COBALT, averaged per month)
+            sponge_bgc.nc       o2, no3, po4, sio4, dic, alk, fed  (NEUS25 COBALT, averaged per month)
             sponge_damping.nc   Idamp = 1 / SPONGE_TAU
             build.log           which source column fed each cell, and the records used per month
             build.txt           mode, years, tau and date of this build
@@ -40,6 +40,7 @@ BGC_VARIABLES = {
     "sio4": ("si",     1.0 / RHO_0),     # COBALT calls silicate 'si', in mol m-3
     "dic":  ("dissic", 1.0 / RHO_0),     # mol m-3
     "alk":  ("talk",   1.0 / RHO_0),     # mol m-3
+    "fed":  ("fed",    1.0),             # dissolved iron, mol kg-1 (no lateral Fe supply in 1D)
 }
 MIN_RECORDS = 1                 # 202611_nocbed has one monthly mean per month (4-day files had about 8)
 
@@ -63,7 +64,7 @@ def nearest_wet_columns(src_lon, src_lat, wet, label):
     pick_i = np.zeros(lon.shape, dtype=int)
     for j in range(lon.shape[0]):
         for i in range(lon.shape[1]):
-            dist2 = ((src_lon[wet_i] - lon[j, i]) * coslat) ** 2 + (src_lat[wet_j] - lat[j, i]) ** 2
+            dist2 = ((src_lon[wet_i] - STATION_LON) * coslat) ** 2 + (src_lat[wet_j] - STATION_LAT) ** 2
             k = int(np.argmin(dist2))
             pick_j[j, i] = wet_j[k]
             pick_i[j, i] = wet_i[k]
@@ -77,6 +78,8 @@ def stop(message):
 
 
 config = read_config()
+# true 1D: every cell takes the one regional column nearest to LAT/LON (config.sh)
+STATION_LON, STATION_LAT = float(config["LON"]), float(config["LAT"])
 mode = config["MODE"]
 year0 = int(config["YEAR0"])
 year1 = year0 if mode == "repeat" else int(config["YEAR1"])

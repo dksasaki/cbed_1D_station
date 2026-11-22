@@ -21,6 +21,7 @@ my_experiment/
 ├── 2c_make_bgc.py
 ├── 3_make_sponge.py
 ├── 4_make_jpoc.py
+├── 5_spinup_cbed.py          optional, after a run: CBED in equilibrium with this column
 ├── run.sh                    runs the model inside model/
 ├── run_<jobid>.out           Slurm logs
 └── model/                    the run directory
@@ -65,13 +66,14 @@ All steps are run from the experiment folder (the top), not from `model/`.
 
 | step | what it does | reads | writes |
 |---|---|---|---|
-| `0_link_data.sh` | links the files that are the same everywhere (initial conditions, deposition, porosity) and the executable; writes the summary | `IC_DIR`, `DEPOSITION_DIR`, `DATASETS`, `POROSITY`, `EXE` | `model/INPUT/*.nc`, `model/mom6`, `experiment.txt` |
+| `0_link_data.sh` | links the files that are the same everywhere (initial conditions, deposition) and the executable; writes the summary | `IC_DIR`, `DEPOSITION_DIR`, `DATASETS`, `EXE` | `model/INPUT/*.nc`, `model/mom6`, `experiment.txt` |
 | `1_make_grid.sh` | builds the grid with FRE-NCtools | `LAT`, `LON`, `DEPTH` | `model/INPUT/grids/<STATION>/` (+ one `.log` per program) |
-| `2_make_cbed.py` | copies the nearest wet column of a regional CBED solution into each cell | `CBED_IC` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
+| `2_make_cbed.py` | copies the wet column of a regional CBED solution nearest to `LAT/LON` into every cell | `CBED_IC` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
 | `2b_make_glorys.py` | copies the nearest ocean cell of the regional GLORYS state into each cell (the regional file has no lon/lat, so MOM6 cannot interpolate it) | `IC_DIR`, `YEAR0` | `model/INPUT/glorys/<STATION>/glorys_ic_station.nc`, `build.log`, `source.txt` |
 | `2c_make_bgc.py` | cuts the regional COBALT tracer state to the station with a finite `_FillValue` (a NaN fill makes MOM6 treat every point as missing) | `IC_DIR` | `model/INPUT/bgc/<STATION>/bgc_ic_station.nc`, `build.log`, `source.txt` |
 | `3_make_sponge.py` | monthly means at the station → nudging files | `MODE`, `YEAR0/1`, `SPONGE_TAU`, `GLORYS_DIR`, `COBALT_DIR` | `model/INPUT/sponge/<STATION>/sponge_ts.nc`, `sponge_bgc.nc`, `sponge_damping.nc`, `build.log`, `build.txt` |
 | `4_make_jpoc.py` | mean POC flux for the biot_bioi build | `COBALT_DIR`, `YEAR0` | `model/INPUT/cbed/<STATION>/fntot_btm_mean.nc` |
+| `5_spinup_cbed.py` | optional, after a run: the CBED state in equilibrium with this column's forcing (offline Newton–Krylov); replaces the step 2 state, which is kept as `generic_CBED.res.from_step2.nc` | `CBED_FORCING_RUN`, `CBED_TOOLS`, `DEPTH` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
 | `run.sh` | runs the segments in `model/`, `SEGS_PER_JOB` per job, then submits the next job | `MODE`, `YEAR0/1`, `NSEG`, `SEGS_PER_JOB`, `ERA5_DIR` | `model/history/<seg>/`, `model/RESTART_<seg>/` |
 
 **Jobs.** This follows how the GofME experiments were run. Each job runs at
@@ -83,6 +85,16 @@ segment. For a slow station (the slope runs took up to 46 min per segment),
 use `SEGS_PER_JOB=9`. To run everything in one long job instead, set
 `SEGS_PER_JOB` to `NSEG` and submit with a longer limit, e.g.
 `sbatch -J name --time=1-12:00:00 run.sh`.
+
+## True 1D
+
+All 16 cells of the 4 × 4 are the same point. `LAT` and `LON` in `config.sh` (the box centre) are also the source: steps 2, 2b, 2c and 3 copy the regional column nearest to them (NWA25 i=300, j=331, 156.3 m) into every cell. `DEPTH` is that column's depth, and the `por` line of `model/data_table` holds its porosity (the `porosity_final.nc` value nearest to that point). For another column, change `LAT`, `LON`, `DEPTH` and that value.
+
+## Starting from a spun-up column
+
+Copy the last `RESTART_segNN` of an earlier run to a folder, set `IC_MODE=restart` and `IC_RESTART=<that folder>`. The CBED state still comes from `model/INPUT/cbed/<STATION>/` (step 2, or step 5 run before the restart). `IC_MODE=cold` (default) starts from the GLORYS and WOA/ESPER files.
+
+Before a second run, move `model/history` and `model/RESTART_seg*` aside: `run.sh` skips segments whose `RESTART_segNN` exists.
 
 ## Run modes (`MODE` in `config.sh`)
 
@@ -102,7 +114,7 @@ These are plain files. Nothing generates them.
 | file | what to change |
 |---|---|
 | `model/MOM_override` | **nudging**: the block at the end. To run without it, set `SPONGE` and `DO_SPONGE_GENERIC_TRACER` to `False` |
-| `model/data_table` | **biot_bioi executable**: uncomment the `cbed_jpoc_mean` line (and run step 4). CO2 is a constant 360 ppm here |
+| `model/data_table` | **porosity**: the `por` line is a constant (true 1D). **biot_bioi executable**: uncomment the `cbed_jpoc_mean` line (and run step 4). CO2 is a constant 360 ppm here |
 | `model/diag_table` | output. `diag_table_no_daily` (default) or `diag_table_with_daily`: `ln -sf diag_table_with_daily model/diag_table` |
 | `model/input.nml.base` | the namelist. `run.sh` fills in the `@...@` placeholders for each segment and writes `model/input.nml` |
 | `model/MOM_input`, `model/SIS_*`, `model/field_table` | the physics and BGC setup, shared with the other station templates |

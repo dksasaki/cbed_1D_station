@@ -76,7 +76,7 @@
 #override DIAG_MLD_DENSITY_DIFF = 0.03
 ! ---------------------------------------------------------------------
 ! NUDGING (sponge) toward the files made by step 3 (3_make_sponge.py):
-!   T, S from GLORYS; o2, no3, po4, sio4, dic, alk from NEUS25 COBALT.
+!   T, S from GLORYS; o2, no3, po4, sio4, dic, alk, fed from NEUS25 COBALT.
 !   One timescale for all, set in config.sh (SPONGE_TAU) -> INPUT/sponge_damping.nc.
 ! To run WITHOUT nudging: set SPONGE and DO_SPONGE_GENERIC_TRACER to False.
 ! To nudge fewer BGC variables: set their DO_SPONGE_GT_<name> to False.
@@ -107,6 +107,9 @@
 #override DO_SPONGE_GT_alk = True
 #override SPONGE_GT_alk_FILE = "sponge_bgc.nc"
 #override SPONGE_GT_alk_VAR = "alk"
+#override DO_SPONGE_GT_fed = True
+#override SPONGE_GT_fed_FILE = "sponge_bgc.nc"
+#override SPONGE_GT_fed_VAR = "fed"
 
 #override DIAG_COORD_DEF_Z = "FILE:diag_dz.nc,dz"
 

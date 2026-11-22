@@ -42,7 +42,8 @@
  "OCN", "dry_dep_no3_flux_ice_ocn",  "drynoy",       "./INPUT/esm4_drynoy_climo_1993-2014.nc",  "bilinear", -1.0
  "OCN", "wet_dep_nh4_flux_ice_ocn",  "wetnh4",       "./INPUT/esm4_wetnh4_climo_1993-2014.nc",  "bilinear", -1.0
  "OCN", "dry_dep_nh4_flux_ice_ocn",  "drynh4",       "./INPUT/esm4_drynh4_climo_1993-2014.nc",  "bilinear", -1.0
- "OCN", "por",                       "porosity",     "./INPUT/porosity_final.nc",           "bilinear", 1.0
+# CBED porosity: one constant for every cell (true 1D): the porosity_final.nc value nearest to LAT/LON
+ "OCN", "por",                       "",             "",                                    "none",     0.5478611
 #
 # CBED long-term mean POC flux (k1,k2,k3, Db_0, bioirri_0). ONLY for the biot_bioi executable:
 # uncomment the next line and run step 4 (python3 4_make_jpoc.py). The biot_bioi build stops

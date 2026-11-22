@@ -14,30 +14,30 @@ set -e
 source config.sh
 mkdir -p model/INPUT
 
+# link the ORIGINAL file: a source that is itself a link is followed to its real target
+link() { ln -sf "$(readlink -f "$1")" "$2"; }
+
 # initial conditions, the same files as 202611_nocbed (NWA25 grid, read and interpolated by the model):
 # temperature and salinity (GLORYS, 2018-01-01; matches YEAR0) and all BGC tracers
-ln -sf "$IC_DIR/glorys_ic_2018-01-01.nc"                        model/INPUT/
-ln -sf "$IC_DIR/bgc_woa_esper_ics_1993_2023-04_update2.nc"      model/INPUT/
+link "$IC_DIR/glorys_ic_2018-01-01.nc"                        model/INPUT/
+link "$IC_DIR/bgc_woa_esper_ics_1993_2023-04_update2.nc"      model/INPUT/
 
 # vertical grid (75 layers, 2 m at the top) and the z diagnostic grid, as in 202611_nocbed
-ln -sf "$IC_DIR/vgrid_75_2m.nc"                                 model/INPUT/
-ln -sf "$IC_DIR/diag_dz.nc"                                     model/INPUT/
+link "$IC_DIR/vgrid_75_2m.nc"                                 model/INPUT/
+link "$IC_DIR/diag_dz.nc"                                     model/INPUT/
 
 # atmospheric deposition of iron, dust and nitrogen (ESM4 1993-2014 climatologies, wet and dry)
 for v in dryfe wetfe drydust wetdust drynoy wetnoy drynh4 wetnh4; do
-    ln -sf "$DEPOSITION_DIR/esm4_${v}_climo_1993-2014.nc"    model/INPUT/
+    link "$DEPOSITION_DIR/esm4_${v}_climo_1993-2014.nc"    model/INPUT/
 done
 
 # other model inputs
-ln -sf "$DATASETS/seawifs-clim-1997-2010.1440x1080.v20180328.nc" model/INPUT/
-ln -sf "$DATASETS/geothermal_davies2013_v1.nc"               model/INPUT/
-ln -sf "$DATASETS/diag_rho2.nc"                              model/INPUT/
-
-# CBED porosity (read through data_table)
-ln -sf "$POROSITY" model/INPUT/porosity_final.nc
+link "$DATASETS/seawifs-clim-1997-2010.1440x1080.v20180328.nc" model/INPUT/
+link "$DATASETS/geothermal_davies2013_v1.nc"               model/INPUT/
+link "$DATASETS/diag_rho2.nc"                              model/INPUT/
 
 # the model executable
-ln -sf "$EXE" model/mom6
+link "$EXE" model/mom6
 
 # every link must point to an existing file
 for f in model/INPUT/*.nc model/mom6; do
@@ -53,8 +53,8 @@ done
     echo "station      $STATION  lat $LAT  lon $LON  depth $DEPTH m"
     echo "executable   $EXE"
     echo "cbed IC      $CBED_IC"
-    echo "porosity     $POROSITY"
-    echo "run          mode=$MODE  year0=$YEAR0  year1=$YEAR1  nseg=$NSEG"
+    echo "porosity     data_table:$(grep '"por"' model/data_table)"
+    echo "run          mode=$MODE  year0=$YEAR0  year1=$YEAR1  nseg=$NSEG  ic_mode=$IC_MODE"
     echo "sponge       tau=${SPONGE_TAU}d  GLORYS=$GLORYS_DIR  COBALT=$COBALT_DIR"
     echo "created      $(date '+%F %T') by 0_link_data.sh"
 } > experiment.txt

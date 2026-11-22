@@ -86,7 +86,7 @@ for segment in $SEGMENTS; do
 
     # 4. the atmospheric forcing of that year (ERA5, as in 202611_nocbed)
     for v in msl t2m sphum u10 v10 strd ssrd lp sf; do
-        ln -sf "$ERA5_DIR/ERA5_${v}_${year}_padded.nc" "INPUT/ERA5_$v.nc"
+        ln -sf "$(readlink -f "$ERA5_DIR/ERA5_${v}_${year}_padded.nc")" "INPUT/ERA5_$v.nc"
         if [ ! -e "INPUT/ERA5_$v.nc" ]; then
             echo "ERROR: no ERA5 forcing for $v in $year" >&2
             exit 1
@@ -99,7 +99,15 @@ for segment in $SEGMENTS; do
     find INPUT -maxdepth 1 -type l -lname '../RESTART_*' -delete
     rm -f INPUT/coupler.res
     ln -sf "cbed/$STATION/generic_CBED.res.nc" INPUT/generic_CBED.res.nc
-    if [ -z "$previous" ]; then
+    if [ -z "$previous" ] && [ "$IC_MODE" = restart ]; then
+        # start from a spun-up water column and ice (IC_RESTART, e.g. the last restart of a
+        # spin-up); CBED from cbed/$STATION/ (steps 2/5), not the restart's own CBED state
+        for f in "$IC_RESTART"/*; do
+            if [ "$(basename "$f")" != generic_CBED.res.nc ]; then ln -sf "$(readlink -f "$f")" INPUT/; fi
+        done
+        start=r
+        force_date=.true.                           # set the clock to YEAR0-01-01
+    elif [ -z "$previous" ]; then
         start=n                                     # cold start
         force_date=.false.
     else

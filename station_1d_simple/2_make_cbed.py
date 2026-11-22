@@ -32,6 +32,8 @@ def read_config(path="config.sh"):
 
 
 config = read_config()
+# true 1D: every cell takes the one regional column nearest to LAT/LON (config.sh)
+STATION_LON, STATION_LAT = float(config["LON"]), float(config["LAT"])
 folder = f"model/INPUT/cbed/{config['STATION']}"
 os.makedirs(folder, exist_ok=True)
 
@@ -62,7 +64,7 @@ pick_i = np.zeros(lon.shape, dtype=int)
 report = []
 for j in range(lon.shape[0]):
     for i in range(lon.shape[1]):
-        dist2 = ((wet_lon - lon[j, i]) * coslat) ** 2 + (wet_lat - lat[j, i]) ** 2
+        dist2 = ((wet_lon - STATION_LON) * coslat) ** 2 + (wet_lat - STATION_LAT) ** 2
         k = int(np.argmin(dist2))
         pick_j[j, i] = wet_j[k]
         pick_i[j, i] = wet_i[k]

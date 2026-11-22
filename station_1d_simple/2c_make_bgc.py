@@ -61,6 +61,8 @@ def rectilinear(hgrid):
 
 
 config = read_config()
+# true 1D: every cell takes the one regional column nearest to LAT/LON (config.sh)
+STATION_LON, STATION_LAT = float(config["LON"]), float(config["LAT"])
 source = os.path.join(config["IC_DIR"], "bgc_woa_esper_ics_1993_2023-04_update2.nc")
 folder = f"model/INPUT/bgc/{config['STATION']}"
 os.makedirs(folder, exist_ok=True)
@@ -80,8 +82,12 @@ depth = xr.DataArray(xr.open_dataset(os.path.join(config["IC_DIR"], "ocean_topog
 
 # --- 3. cut: the nearest regional column and row of every station column and row, all levels
 fields = [name for name in regional.data_vars if regional[name].dims == ("Time", "zl", "yh", "xh")]
-cut = regional[fields].sel(xh=lon, yh=lat, method="nearest")
-depth_cut = depth.sel(xh=lon, yh=lat, method="nearest")
+# true 1D: every station column and row picks the regional column nearest to LAT/LON,
+# so the 4 x 4 cut is that one column repeated
+src_lon = np.full(len(lon), STATION_LON)
+src_lat = np.full(len(lat), STATION_LAT)
+cut = regional[fields].sel(xh=src_lon, yh=src_lat, method="nearest")
+depth_cut = depth.sel(xh=src_lon, yh=src_lat, method="nearest")
 assert bool((depth_cut > 0).all()), "a station cell falls on a regional land cell"
 
 xi = regional.get_index("xh").get_indexer(cut["xh"].values)
