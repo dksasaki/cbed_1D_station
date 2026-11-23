@@ -1,0 +1,36 @@
+# Settings of the CBED spin-up (step 5), copied on 2026-11-23 from the [cbed] sections of
+# 202611_cbed_R2py/config.toml, so that this experiment does not depend on that folder.
+# Only method = "newton_krylov" is supported by 5_spinup_cbed.py.
+
+[cbed]
+# method = "steady_state"   CBED v2 steady state (cbed2py/model/cbed_v2_func.R in
+#                           cbedr2py_1d) with the time-mean forcing
+# method = "newton_krylov"  cbed2py transient model spun up to its periodic state
+#                           under the one-year climatology of the forcing
+#                           (Jacobian-free Newton-Krylov, cbed2py.spinup)
+method = "newton_krylov"
+model  = "fast"             # cbed2py model for newton_krylov: "fast" (~7x quicker) or "v2"
+
+# cbed2py parameter overrides (newton_krylov only). The point setup (forcing,
+# porosity, temp, S, w, depth, f.OM1-3) is set by cbed_wrapper.py as for
+# steady_state.
+[cbed.params]
+jpoc_mode_reactivity    = "instantaneous"   # instantaneous | longterm_mean | trailing_mean
+jpoc_mode_bioturbation  = "instantaneous"
+jpoc_mode_bioirrigation = "instantaneous"
+
+# keywords of cbed2py.spinup.newton_krylov_spinup (newton_krylov only)
+[cbed.spinup]
+n_periods     = 5           # years per shot; longer shots (5-10) help slow-OM points
+                            # converge, but each Newton step costs n_periods times more
+verbose       = true        # print every Newton step (step 5 only; the wrapper's default is false)
+max_newton    = 10          # the test point needed 8
+gmres_iter    = 20
+tol_imbalance_rel = 1e-3    # OM imbalance tolerance as a fraction of the point's
+                            # annual-mean J.OM (1e-3 = 0.1%), converted per point by
+                            # cbed_wrapper.py; an absolute tol_imbalance [umol C cm-2 yr-1]
+                            # is used instead if given
+tol_f         = 5e-5        # RMS relative state change per year; drift over 100 yr <~ 100*tol_f (~0.5%)
+n_sub         = 12
+scale_abs     = 1e-3        # minimum scale of each unknown (state units), so a
+                            # species ~0 at the start (e.g. ODU) does not swamp ||G||

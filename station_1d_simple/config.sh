@@ -20,7 +20,8 @@ DEPTH=156.3                # flat bottom [m]
 EXE=/home/d.sasaki/schultz/d.sasaki/compilation/explorer/202607_CBED1.0_betav4_sinksource/builds/build/explorer-intel/ocean_ice/repro/MOM6SIS2
 # regional CBED solution: step 2 copies its wet column nearest to LAT/LON into every cell
 CBED_IC=/home/d.sasaki/schultz/d.sasaki/km_scale_model/mom6cobalt_25th/20240723_zstar/tasks/202611_cbed_R2py/data1/cbed_results.nc
-# step 5 only (5_spinup_cbed.py): one year of a run of this experiment, and the CBED tools folder
+# step 5 only (5_spinup_cbed.py): one year of a run of this experiment (settings: cbed_spinup.toml), and the
+# CBED tools folder: its pixi env (python, R, rpy2, cbed2py) and scripts/cbed_wrapper.py (PYTHONPATH)
 CBED_FORCING_RUN=
 CBED_TOOLS=
 

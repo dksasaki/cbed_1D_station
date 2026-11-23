@@ -22,6 +22,7 @@ my_experiment/
 ├── 3_make_sponge.py
 ├── 4_make_jpoc.py
 ├── 5_spinup_cbed.py          optional, after a run: CBED in equilibrium with this column
+├── cbed_spinup.toml          settings of step 5
 ├── run.sh                    runs the model inside model/
 ├── run_<jobid>.out           Slurm logs
 └── model/                    the run directory
@@ -73,7 +74,7 @@ All steps are run from the experiment folder (the top), not from `model/`.
 | `2c_make_bgc.py` | cuts the regional COBALT tracer state to the station with a finite `_FillValue` (a NaN fill makes MOM6 treat every point as missing) | `IC_DIR` | `model/INPUT/bgc/<STATION>/bgc_ic_station.nc`, `build.log`, `source.txt` |
 | `3_make_sponge.py` | monthly means at the station → nudging files | `MODE`, `YEAR0/1`, `SPONGE_TAU`, `GLORYS_DIR`, `COBALT_DIR` | `model/INPUT/sponge/<STATION>/sponge_ts.nc`, `sponge_bgc.nc`, `sponge_damping.nc`, `build.log`, `build.txt` |
 | `4_make_jpoc.py` | mean POC flux for the biot_bioi build | `COBALT_DIR`, `YEAR0` | `model/INPUT/cbed/<STATION>/fntot_btm_mean.nc` |
-| `5_spinup_cbed.py` | optional, after a run: the CBED state in equilibrium with this column's forcing (offline Newton–Krylov); replaces the step 2 state, which is kept as `generic_CBED.res.from_step2.nc` | `CBED_FORCING_RUN`, `CBED_TOOLS`, `DEPTH` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
+| `5_spinup_cbed.py` | optional, after a run: the CBED state in equilibrium with this column's forcing (offline Newton–Krylov, no first guess, one cell copied to all 16, about 5 min); replaces the step 2 state, which is kept as `generic_CBED.res.from_step2.nc`. Run it with `PATH` and `PYTHONPATH` set to `CBED_TOOLS` as in its docstring | `CBED_FORCING_RUN`, `CBED_TOOLS`, `DEPTH`, `cbed_spinup.toml` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
 | `run.sh` | runs the segments in `model/`, `SEGS_PER_JOB` per job, then submits the next job | `MODE`, `YEAR0/1`, `NSEG`, `SEGS_PER_JOB`, `ERA5_DIR` | `model/history/<seg>/`, `model/RESTART_<seg>/` |
 
 **Jobs.** This follows how the GofME experiments were run. Each job runs at
