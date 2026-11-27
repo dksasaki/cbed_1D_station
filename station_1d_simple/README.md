@@ -34,7 +34,8 @@ my_experiment/
     ├── mom6 -> the executable
     ├── INPUT/
     │   ├── grids/<STATION>/     grid files + make_*.log
-    │   ├── cbed/<STATION>/      generic_CBED.res.nc, build.log, source.txt (+ fntot_btm_mean.nc)
+    │   ├── cbed/<STATION>/      generic_CBED.res.nc, build.log, source.txt (+ fntot_btm_mean.nc,
+    │   │                        generic_CBED.res.kelp.nc from step 2e)
     │   ├── glorys/<STATION>/    glorys_ic_station.nc (T, S, SSH), build.log, source.txt
     │   ├── bgc/<STATION>/       bgc_ic_station.nc (COBALT tracers), build.log, source.txt
     │   ├── kelp/<STATION>/      mask_addition.nc, mask_e_juptake.nc, build.log
@@ -79,7 +80,7 @@ All steps are run from the experiment folder (the top), not from `model/`.
 | `2b_make_glorys.py` | copies the nearest ocean cell of the regional GLORYS state into each cell (the regional file has no lon/lat, so MOM6 cannot interpolate it) | `IC_DIR`, `YEAR0` | `model/INPUT/glorys/<STATION>/glorys_ic_station.nc`, `build.log`, `source.txt` |
 | `2c_make_bgc.py` | cuts the regional COBALT tracer state to the station with a finite `_FillValue` (a NaN fill makes MOM6 treat every point as missing) | `IC_DIR` | `model/INPUT/bgc/<STATION>/bgc_ic_station.nc`, `build.log`, `source.txt` |
 | `2d_make_kelp.py` | the kelp forcing that COBALT reads through data_override: a detritus source into the bottom layer and/or a nutrient sink in chosen layers, the same in every cell, on a time axis over the run years | `STATION`, `DEPTH`, `MODE`, `YEAR0/1`, `kelp.toml`, the step 1 grid | `model/INPUT/kelp/<STATION>/mask_addition.nc`, `mask_e_juptake.nc`, `build.log` |
-| `2e_make_kelp_ic.py` | adds the kelp pools that CBED reads from its initial state when `do_external_source` is on (`cbed_om1/2/3_kelp`), as zeros laid out like `cbed_om1..3`; keeps pools already there | `STATION`, the step 2 (or 5) state | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, + a line in `build.log` |
+| `2e_make_kelp_ic.py` | optional (`[ic] cbed` in `kelp.toml`): a copy of the CBED state with the kelp pools CBED reads when `do_external_source` is on (`cbed_om1/2/3_kelp`, zeros laid out like `cbed_om1..3`); the step 2/5 file is not modified, and `run.sh` starts CBED from the copy when it exists | `STATION`, `kelp.toml`, the step 2 (or 5) state | `model/INPUT/cbed/<STATION>/generic_CBED.res.kelp.nc`, + a line in `build.log` |
 | `3_make_sponge.py` | monthly means at the station → nudging files | `MODE`, `YEAR0/1`, `SPONGE_TAU`, `GLORYS_DIR`, `COBALT_DIR` | `model/INPUT/sponge/<STATION>/sponge_ts.nc`, `sponge_bgc.nc`, `sponge_damping.nc`, `build.log`, `build.txt` |
 | `4_make_jpoc.py` | mean POC flux for the biot_bioi build | `COBALT_DIR`, `YEAR0` | `model/INPUT/cbed/<STATION>/fntot_btm_mean.nc` |
 | `5_spinup_cbed.py` | optional, after a run: the CBED state in equilibrium with this column's forcing (offline Newton–Krylov, no first guess, one cell copied to all 16, about 5 min); replaces the step 2 state, which is kept as `generic_CBED.res.from_step2.nc`. Run it with `PATH` and `PYTHONPATH` set to `CBED_TOOLS` as in its docstring | `CBED_FORCING_RUN`, `CBED_TOOLS`, `DEPTH`, `cbed_spinup.toml` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
@@ -111,7 +112,7 @@ The sinksource executable can add kelp sources and sinks, read through FMS data_
 - **Settings.** The rate, the active windows and the time step of each case are in `kelp.toml`. For the sink, `depth` is a `[top, bottom]` range of nominal layer centres (from `vgrid_75_2m.nc`) above `DEPTH`. The forcing is the same in all 16 cells. The time axis runs from `YEAR0` to the last run year + 1; in `repeat` mode every segment replays `YEAR0`'s windows.
 - **Switches.** COBALT takes the switches from `model/COBALT_input` only. `model/input.nml.base` (`&generic_COBALT_nml`) has entries with the same names, which COBALT reads but does not use; keep them equal to `COBALT_input` anyway. With the switch on, the matching file must exist, so run step 2d first. With it off, the data_table lines are never read.
 - **Rerun step 2d** after changing `kelp.toml`, `YEAR0/1` or `MODE`.
-- **Kelp pools.** With the source on, CBED reads `cbed_om1/2/3_kelp` from its initial state even on a cold start, and stops if they are missing; step 2e adds them as zeros. Rerun it after steps 2 or 5, which rewrite that file. COBALT's `ndet_kelp` starts at zero through `ndet_kelp_requires_restart = f` in `model/field_table`.
+- **Kelp pools.** With the source on, CBED reads `cbed_om1/2/3_kelp` from its initial state even on a cold start, and stops if they are missing. Step 2e (if `[ic] cbed = true` in `kelp.toml`) creates `generic_CBED.res.kelp.nc`, the step 2/5 state plus these pools as zeros, and `run.sh` starts CBED from it when it exists. `run.sh` stops if it is older than `generic_CBED.res.nc`, so rerun step 2e after steps 2 or 5. To start from the step 2/5 state again, delete the kelp file. COBALT's `ndet_kelp` starts at zero through `ndet_kelp_requires_restart = f` in `model/field_table`.
 
 ## Starting from a spun-up column
 

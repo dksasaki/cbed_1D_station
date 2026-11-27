@@ -95,10 +95,20 @@ for segment in $SEGMENTS; do
 
     # 5. the initial state
     #    remove the restart links of the previous segment (and a stale coupler.res,
-    #    which would otherwise set the start date), then link the cold-start CBED state
+    #    which would otherwise set the start date), then link the cold-start CBED state:
+    #    the step 2/5 state, or its copy with the kelp pools from step 2e if there is one
     find INPUT -maxdepth 1 -type l -lname '../RESTART_*' -delete
     rm -f INPUT/coupler.res
-    ln -sf "cbed/$STATION/generic_CBED.res.nc" INPUT/generic_CBED.res.nc
+    cbed_state=generic_CBED.res.nc
+    if [ -e "INPUT/cbed/$STATION/generic_CBED.res.kelp.nc" ]; then
+        if [ "INPUT/cbed/$STATION/generic_CBED.res.nc" -nt "INPUT/cbed/$STATION/generic_CBED.res.kelp.nc" ]; then
+            echo "ERROR: cbed/$STATION/generic_CBED.res.kelp.nc is older than generic_CBED.res.nc: rerun python3 2e_make_kelp_ic.py" >&2
+            exit 1
+        fi
+        cbed_state=generic_CBED.res.kelp.nc
+    fi
+    ln -sf "cbed/$STATION/$cbed_state" INPUT/generic_CBED.res.nc
+    if [ -z "$previous" ]; then echo "    CBED starts from model/INPUT/cbed/$STATION/$cbed_state"; fi
     if [ -z "$previous" ] && [ "$IC_MODE" = restart ]; then
         # start from a spun-up water column and ice (IC_RESTART, e.g. the last restart of a
         # spin-up); CBED from cbed/$STATION/ (steps 2/5), not the restart's own CBED state

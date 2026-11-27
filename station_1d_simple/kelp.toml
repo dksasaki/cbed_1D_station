@@ -16,6 +16,12 @@ freq    = "D"                              # pandas frequency of the time axis
 rate    = 1.0                              # ndet_addition, before the data_table scale (1e-2)
 active  = [["2018-01-03", "2018-01-10"]]   # e.g. [["2018-03-01", "2018-03-15"], ["2018-05-01", "2018-06-30"]]
 
+# Step 2e (2e_make_kelp_ic.py): CBED's kelp pools in the initial state, needed with
+# do_external_source. true: create cbed/<STATION>/generic_CBED.res.kelp.nc (the step 2/5
+# state + zero pools), which run.sh then starts CBED from; the step 2/5 file is not modified.
+[ic]
+cbed = true
+
 # do_external_sink: NO3 uptake (PO4, Fe via data_table) in the layers inside depth.
 [sink]
 enabled = false
