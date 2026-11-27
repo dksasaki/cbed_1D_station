@@ -32,22 +32,17 @@ solution: starting from the current state stalled at an OM imbalance of
 -0.15% of J.OM and ran to max_newton (10 steps, ~480 model years per cell);
 from cbed2py's own start one cell converged in 5 steps (145 model years, ~5 min).
 
-Run with the python of $CBED_TOOLS/.pixi (rpy2, R, cbed2py), on a compute node:
-    export PATH=$CBED_TOOLS/.pixi/envs/default/bin:$PATH
-    export PYTHONPATH=$CBED_TOOLS/scripts          # for "import cbed_wrapper"
+Run on a compute node, with any python:
     python3 5_spinup_cbed.py
+cbed_wrapper needs the python of $CBED_TOOLS/.pixi (rpy2, R, cbed2py). The script puts
+that environment first on PATH (rpy2 finds R there) and $CBED_TOOLS/scripts on sys.path,
+and re-runs itself with that python if it was started with another one.
 """
 import glob
 import os
 import shutil
+import sys
 import time
-
-import numpy as np
-import xarray as xr
-
-import cbed_wrapper as cw        # $CBED_TOOLS/scripts, on PYTHONPATH (see "Run with" above)
-
-RHO_0 = 1035.0          # [kg m-3] as cobalt%Rho_0 in generic_CBED.F90
 
 
 def read_config(path="config.sh"):
@@ -62,6 +57,22 @@ def read_config(path="config.sh"):
 
 
 config = read_config()
+
+# --- 0. the CBED tools' python: cbed_wrapper imports rpy2 (which needs R on PATH) and cbed2py
+tools_env = os.path.join(config["CBED_TOOLS"], ".pixi", "envs", "default")
+tools_python = os.path.join(tools_env, "bin", "python3")
+if not config["CBED_TOOLS"] or not os.path.exists(tools_python):
+    raise SystemExit(f"CBED_TOOLS={config['CBED_TOOLS']!r} in config.sh: no {tools_python} (run 'pixi install' there)")
+os.environ["PATH"] = os.path.join(tools_env, "bin") + os.pathsep + os.environ["PATH"]
+if os.path.realpath(sys.prefix) != os.path.realpath(tools_env):
+    os.execv(tools_python, [tools_python, *sys.argv])          # start again with that python
+sys.path.insert(0, os.path.join(config["CBED_TOOLS"], "scripts"))
+
+import numpy as np                    # noqa: E402  (after the switch to the CBED tools' python)
+import xarray as xr                   # noqa: E402
+import cbed_wrapper as cw             # noqa: E402  ($CBED_TOOLS/scripts)
+
+RHO_0 = 1035.0          # [kg m-3] as cobalt%Rho_0 in generic_CBED.F90
 
 folder = f"model/INPUT/cbed/{config['STATION']}"
 state_file = f"{folder}/generic_CBED.res.nc"
