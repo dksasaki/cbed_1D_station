@@ -63,3 +63,4 @@ history/
 *.bak_*
 sea_ice_geometry.nc
 seaice.stats
+test*

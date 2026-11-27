@@ -131,6 +131,10 @@
             topog_file = 'INPUT/navy_topography.data.nc'
 /
 
+ &time_interp_external_nml
+            max_fields = 400
+/
+
  &xgrid_nml
             make_exchange_reproduce = .false.
             interp_method = 'second_order'
@@ -150,7 +154,8 @@
        co2_calc = 'mocsy'
        imbalance_tolerance=1.0e-6
        as_param_cobalt='W92'
-       do_external_source=.false.
+       ! not read: COBALT takes these two switches from COBALT_input; kept equal to it
+       do_external_source=.true.
        do_external_sink=.false.
        do_cbed = .true.
 /

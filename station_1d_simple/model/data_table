@@ -50,3 +50,16 @@
 # (FATAL) without it; the sinksource build does not read it.
 # The file holds time-mean fntot_btm (mol N m-2 s-1); 106/16 = 6.625 converts N to C.
 "OCN", "cbed_jpoc_mean",            "fntot_btm",    "./INPUT/fntot_btm_mean.nc",           "bilinear", 6.625
+#
+# Kelp sources and sinks (step 2d, 2d_make_kelp.py; settings in kelp.toml), the same lines as 202611_kelp.
+# Read only when do_external_source / do_external_sink is True in COBALT_input.
+# Source: N detritus into the bottom layer, ndet_addition x scale = mol N m-2 s-1; P and Fe from the same field.
+# Sink: uptake in the masked layers, e_juptake_no3 x scale = mol N kg-1 s-1; PO4 and Fe from the same field.
+"OCN", "ndet_addition",   "ndet_addition",   "./INPUT/mask_addition.nc",  "none", 1.0e-2
+"OCN", "pdet_addition",   "ndet_addition",   "./INPUT/mask_addition.nc",  "none", 1.0e-5
+"OCN", "fedet_addition",  "ndet_addition",   "./INPUT/mask_addition.nc",  "none", 1.0e-9
+"OCN", "mask_addition_t", "mask_addition_t", "./INPUT/mask_addition.nc",  "none", 1.0
+"OCN", "e_juptake_no3",   "e_juptake_no3",   "./INPUT/mask_e_juptake.nc", "none", 1.0e-6
+"OCN", "e_juptake_po4",   "e_juptake_no3",   "./INPUT/mask_e_juptake.nc", "none", 1.0e-5
+"OCN", "e_juptake_fed",   "e_juptake_no3",   "./INPUT/mask_e_juptake.nc", "none", 1.0e-9
+"OCN", "mask_e_juptake",  "mask_e_juptake",  "./INPUT/mask_e_juptake.nc", "none", 1.0

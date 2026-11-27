@@ -807,6 +807,11 @@ psm_btf_requires_src_info = f
 silg_btf_requires_src_info = f
 simd_btf_requires_src_info = f
 #
+# ndet_kelp (only with do_external_source) starts at 0. g_tracer_add hard-codes
+# requires_src_info = f for it, so it cannot use a src_file: without the next line MOM6
+# asks for a GENERIC_TRACER_IC_FILE. Restart files still carry it (MOM_generic_tracer.F90).
+ndet_kelp_requires_restart = f
+#
 #
 ndet_fast_src_file = INPUT/bgc_ic_station.nc
 ndet_fast_src_var_name = ndet_fast

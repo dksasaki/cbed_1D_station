@@ -19,6 +19,9 @@ my_experiment/
 ├── 2_make_cbed.py
 ├── 2b_make_glorys.py
 ├── 2c_make_bgc.py
+├── 2d_make_kelp.py           kelp sources and sinks (data_override files)
+├── kelp.toml                 settings of step 2d
+├── 2e_make_kelp_ic.py        kelp pools (zeros) in the CBED initial state
 ├── 3_make_sponge.py
 ├── 4_make_jpoc.py
 ├── 5_spinup_cbed.py          optional, after a run: CBED in equilibrium with this column
@@ -34,6 +37,7 @@ my_experiment/
     │   ├── cbed/<STATION>/      generic_CBED.res.nc, build.log, source.txt (+ fntot_btm_mean.nc)
     │   ├── glorys/<STATION>/    glorys_ic_station.nc (T, S, SSH), build.log, source.txt
     │   ├── bgc/<STATION>/       bgc_ic_station.nc (COBALT tracers), build.log, source.txt
+    │   ├── kelp/<STATION>/      mask_addition.nc, mask_e_juptake.nc, build.log
     │   ├── sponge/<STATION>/    sponge_ts/bgc/damping.nc, build.log, build.txt
     │   └── *.nc                 links into the folders above, or to DATASETS
     ├── history/<segment>/       output of each segment
@@ -57,6 +61,8 @@ source config.sh                # puts FRE-NCtools and python on PATH (once per 
 python3 2_make_cbed.py          # CBED initial state -> model/INPUT/cbed/<STATION>/
 python3 2b_make_glorys.py       # T, S, SSH initial state -> model/INPUT/glorys/<STATION>/
 python3 2c_make_bgc.py          # COBALT tracer initial state -> model/INPUT/bgc/<STATION>/
+python3 2d_make_kelp.py         # kelp sources and sinks -> model/INPUT/kelp/<STATION>/   (see "Kelp")
+python3 2e_make_kelp_ic.py      # kelp pools in the CBED initial state (after step 2, and after 5)
 python3 3_make_sponge.py        # nudging files  -> model/INPUT/sponge/<STATION>/   (a few minutes)
 python3 4_make_jpoc.py          # ONLY for the biot_bioi executable, see below
 
@@ -72,6 +78,8 @@ All steps are run from the experiment folder (the top), not from `model/`.
 | `2_make_cbed.py` | copies the wet column of a regional CBED solution nearest to `LAT/LON` into every cell | `CBED_IC` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
 | `2b_make_glorys.py` | copies the nearest ocean cell of the regional GLORYS state into each cell (the regional file has no lon/lat, so MOM6 cannot interpolate it) | `IC_DIR`, `YEAR0` | `model/INPUT/glorys/<STATION>/glorys_ic_station.nc`, `build.log`, `source.txt` |
 | `2c_make_bgc.py` | cuts the regional COBALT tracer state to the station with a finite `_FillValue` (a NaN fill makes MOM6 treat every point as missing) | `IC_DIR` | `model/INPUT/bgc/<STATION>/bgc_ic_station.nc`, `build.log`, `source.txt` |
+| `2d_make_kelp.py` | the kelp forcing that COBALT reads through data_override: a detritus source into the bottom layer and/or a nutrient sink in chosen layers, the same in every cell, on a time axis over the run years | `STATION`, `DEPTH`, `MODE`, `YEAR0/1`, `kelp.toml`, the step 1 grid | `model/INPUT/kelp/<STATION>/mask_addition.nc`, `mask_e_juptake.nc`, `build.log` |
+| `2e_make_kelp_ic.py` | adds the kelp pools that CBED reads from its initial state when `do_external_source` is on (`cbed_om1/2/3_kelp`), as zeros laid out like `cbed_om1..3`; keeps pools already there | `STATION`, the step 2 (or 5) state | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, + a line in `build.log` |
 | `3_make_sponge.py` | monthly means at the station → nudging files | `MODE`, `YEAR0/1`, `SPONGE_TAU`, `GLORYS_DIR`, `COBALT_DIR` | `model/INPUT/sponge/<STATION>/sponge_ts.nc`, `sponge_bgc.nc`, `sponge_damping.nc`, `build.log`, `build.txt` |
 | `4_make_jpoc.py` | mean POC flux for the biot_bioi build | `COBALT_DIR`, `YEAR0` | `model/INPUT/cbed/<STATION>/fntot_btm_mean.nc` |
 | `5_spinup_cbed.py` | optional, after a run: the CBED state in equilibrium with this column's forcing (offline Newton–Krylov, no first guess, one cell copied to all 16, about 5 min); replaces the step 2 state, which is kept as `generic_CBED.res.from_step2.nc`. Run it with `PATH` and `PYTHONPATH` set to `CBED_TOOLS` as in its docstring | `CBED_FORCING_RUN`, `CBED_TOOLS`, `DEPTH`, `cbed_spinup.toml` | `model/INPUT/cbed/<STATION>/generic_CBED.res.nc`, `build.log`, `source.txt` |
@@ -90,6 +98,20 @@ use `SEGS_PER_JOB=9`. To run everything in one long job instead, set
 ## True 1D
 
 All 16 cells of the 4 × 4 are the same point. `LAT` and `LON` in `config.sh` (the box centre) are also the source: steps 2, 2b, 2c and 3 copy the regional column nearest to them (NWA25 i=300, j=331, 156.3 m) into every cell. `DEPTH` is that column's depth, and the `por` line of `model/data_table` holds its porosity (the `porosity_final.nc` value nearest to that point). For another column, change `LAT`, `LON`, `DEPTH` and that value.
+
+## Kelp
+
+The sinksource executable can add kelp sources and sinks, read through FMS data_override (the kelp lines at the end of `model/data_table`):
+
+| case | switch in `model/COBALT_input` | file | what COBALT does |
+|---|---|---|---|
+| source | `do_external_source` | `mask_addition.nc` | adds N detritus (and P, Fe from the same field) to the bottom layer: `ndet_addition` × 1e-2 = mol N m-2 s-1 |
+| sink | `do_external_sink` | `mask_e_juptake.nc` | removes NO3 (and PO4, Fe) in the masked layers, capped by what is there: `e_juptake_no3` × 1e-6 = mol N kg-1 s-1 |
+
+- **Settings.** The rate, the active windows and the time step of each case are in `kelp.toml`. For the sink, `depth` is a `[top, bottom]` range of nominal layer centres (from `vgrid_75_2m.nc`) above `DEPTH`. The forcing is the same in all 16 cells. The time axis runs from `YEAR0` to the last run year + 1; in `repeat` mode every segment replays `YEAR0`'s windows.
+- **Switches.** COBALT takes the switches from `model/COBALT_input` only. `model/input.nml.base` (`&generic_COBALT_nml`) has entries with the same names, which COBALT reads but does not use; keep them equal to `COBALT_input` anyway. With the switch on, the matching file must exist, so run step 2d first. With it off, the data_table lines are never read.
+- **Rerun step 2d** after changing `kelp.toml`, `YEAR0/1` or `MODE`.
+- **Kelp pools.** With the source on, CBED reads `cbed_om1/2/3_kelp` from its initial state even on a cold start, and stops if they are missing; step 2e adds them as zeros. Rerun it after steps 2 or 5, which rewrite that file. COBALT's `ndet_kelp` starts at zero through `ndet_kelp_requires_restart = f` in `model/field_table`.
 
 ## Starting from a spun-up column
 
@@ -115,7 +137,7 @@ These are plain files. Nothing generates them.
 | file | what to change |
 |---|---|
 | `model/MOM_override` | **nudging**: the block at the end. To run without it, set `SPONGE` and `DO_SPONGE_GENERIC_TRACER` to `False` |
-| `model/data_table` | **porosity**: the `por` line is a constant (true 1D). **biot_bioi executable**: uncomment the `cbed_jpoc_mean` line (and run step 4). CO2 is a constant 360 ppm here |
+| `model/data_table` | **kelp**: the last block (see "Kelp"). **porosity**: the `por` line is a constant (true 1D). **biot_bioi executable**: uncomment the `cbed_jpoc_mean` line (and run step 4). CO2 is a constant 360 ppm here |
 | `model/diag_table` | output. `diag_table_no_daily` (default) or `diag_table_with_daily`: `ln -sf diag_table_with_daily model/diag_table` |
 | `model/input.nml.base` | the namelist. `run.sh` fills in the `@...@` placeholders for each segment and writes `model/input.nml` |
 | `model/MOM_input`, `model/SIS_*`, `model/field_table` | the physics and BGC setup, shared with the other station templates |

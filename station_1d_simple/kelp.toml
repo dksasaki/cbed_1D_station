@@ -1,0 +1,25 @@
+# Settings of the kelp sources and sinks (step 2d, 2d_make_kelp.py).
+# The time axis (YEAR0 .. YEAR1, MODE) and DEPTH come from config.sh.
+# Each case also needs its switch in model/COBALT_input (the one COBALT reads)
+# and, for consistency, in model/input.nml.base.
+# Field names and scale factors are in model/data_table.
+#
+# active: any number of [start, end] windows (inclusive, may overlap); the forcing is
+#   rate inside them, 0 outside. They must lie within the run years; in repeat mode
+#   every segment replays YEAR0's windows. data_override interpolates between records,
+#   so each edge ramps over one record (a finer freq gives sharper edges).
+
+# do_external_source: N detritus (P, Fe via data_table) added to the bottom layer.
+[source]
+enabled = true
+freq    = "D"                              # pandas frequency of the time axis
+rate    = 1.0                              # ndet_addition, before the data_table scale (1e-2)
+active  = [["2018-01-03", "2018-01-10"]]   # e.g. [["2018-03-01", "2018-03-15"], ["2018-05-01", "2018-06-30"]]
+
+# do_external_sink: NO3 uptake (PO4, Fe via data_table) in the layers inside depth.
+[sink]
+enabled = false
+freq    = "D"                              # 4 x 4 x 75 cells: a few kB per record
+depth   = [0.0, 20.0]                      # m, [top, bottom] range of nominal layer centres
+rate    = 1.0                              # e_juptake_no3, before the data_table scale (1e-6)
+active  = [["2018-04-01", "2018-06-30"]]
